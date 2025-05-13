@@ -10,10 +10,10 @@ const font = Poppins({
 const Logo = () => {
   return (
     <div className="hidden md:flex items-center gap-x-2">
-      <Image src="/vercel.svg" alt="logo" width="40" height="40" />
-      <p className={cn("font-semibold", font.className)}>
-        SmartNot<span className="text-yellow-500  ">.</span>
-      </p>
+      <Image src="/logo-ligth.png" alt="logo" width="40" height="40" />
+      {/* <p className={cn("font-semibold", font.className)}>
+        SmartNot<span className="text-yellow-500 ">.</span>
+      </p> */}
     </div>
   );
 };

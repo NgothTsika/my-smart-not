@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const poppinsRegular = localFont({
+  src: "./fonts/Inter-VariableFont_opsz,wght.ttf",
+  variable: "--font-poppins-regular",
+  weight: "100 900",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +20,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Not",
+  title: "SmartNot",
   description: "The connected workspace where better, faster work happens.",
+  icons: [
+    {
+      media: "(prefers-color-sheme: light)",
+      url: "/logo-light.png",
+      href: "/logo-light.png",
+    },
+    {
+      media: "(prefers-color-sheme: dark)",
+      url: "/logo-dark.png",
+      href: "/logo-dark.png",
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -25,9 +44,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${poppinsRegular.className} ${geistMono.variable} antialiased`}
       >
+        {/* <ThemeProvider> */}
         {children}
+        {/* </ThemeProvider> */}
       </body>
     </html>
   );
