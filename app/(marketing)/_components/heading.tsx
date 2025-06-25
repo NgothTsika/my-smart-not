@@ -4,9 +4,17 @@ import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation"; // Correct import for Next.js 13+ app directory
 
 const Heading = () => {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  const handleLoginClick = () => {
+    router.push("/auth"); // Redirect to the AuthForm page
+  };
+
   return (
     <div className="max-w-3xl space-y-2 mt-3">
       <h1 className="text-3xl sm:text-5xl md:text-4xl font-bold">
@@ -24,7 +32,7 @@ const Heading = () => {
       )}
 
       {status === "unauthenticated" && (
-        <Button className="">
+        <Button onClick={handleLoginClick}>
           Get Started with NoteFlow
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
