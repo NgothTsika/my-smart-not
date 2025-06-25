@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import ToasterProvider from "@/components/providers/ToasterProvider";
+import AuthContext from "@/context/AuthContext";
 
 const poppinsRegular = localFont({
   src: "./fonts/Inter-VariableFont_opsz,wght.ttf",
@@ -47,14 +49,17 @@ export default function RootLayout({
       <body
         className={`${poppinsRegular.className} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <AuthContext>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ToasterProvider />
+            {children}
+          </ThemeProvider>
+        </AuthContext>
       </body>
     </html>
   );

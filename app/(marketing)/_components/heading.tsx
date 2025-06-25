@@ -1,11 +1,14 @@
 "use client";
 
+import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const Heading = () => {
+  const { data: session, status } = useSession();
   return (
-    <div className=" max-w-3xl space-y-2 mt-3">
+    <div className="max-w-3xl space-y-2 mt-3">
       <h1 className="text-3xl sm:text-5xl md:text-4xl font-bold">
         Stay Focused. Stay Organized. Welcome to{" "}
         <span className="underline">NoteFlow</span>
@@ -14,10 +17,25 @@ const Heading = () => {
         Notes, tasks, and projects — all in sync, all in one place.
       </h3>
 
-      <Button>
-        Get Started with NoteFlow
-        <ArrowRight className="h-4 w-4 ml-2" />
-      </Button>
+      {status === "loading" && (
+        <div className="flex items-center justify-center w-full">
+          <Spinner size="lg" />
+        </div>
+      )}
+
+      {status === "unauthenticated" && (
+        <Button className="">
+          Get Started with NoteFlow
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+      )}
+
+      {status === "authenticated" && session?.user && (
+        <Button>
+          Go to Your Workspace
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+      )}
     </div>
   );
 };
