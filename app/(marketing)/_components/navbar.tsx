@@ -11,13 +11,16 @@ const Navbar = () => {
   return (
     <div
       className={cn(
-        "z-50 bg-background fixed top-0 flex items-center w-full p-6",
-        scroll && "border-b shadow-sm"
+        "z-50 bg-background fixed top-0 flex items-center w-full p-6 dark:bg-[#1F1F1F] ",
+        scroll && "border-b shadow-md"
       )}
     >
       <Logo />
-      <div className=" flex items-center gap-x-2 w-full justify-between md:justify-end md:*:ml-auto ">
-        <ModeToggle />
+      <div className="md:ml-auto justify-end w-full flex items-center gap-x-2">
+        Login
+        <div>
+          <ModeToggle />
+        </div>
       </div>
     </div>
   );
