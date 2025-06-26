@@ -7,7 +7,7 @@ import Logo from "./logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import Avatar from "@/components/ui/Avatar";
+import Avatar from "@/components/Avatar";
 import { useState } from "react";
 import { Spinner } from "@/components/spinner";
 import Link from "next/link";
@@ -61,12 +61,7 @@ const Navbar = () => {
               onClick={handleAvatarClick}
               className="cursor-pointer flex item-center gap-x-2"
             >
-              <Button
-                size="sm"
-                variant="ghost"
-                asChild
-                className="cursor-pointer"
-              >
+              <Button size="sm" variant="ghost" asChild>
                 <Link href="/documents">Enter NoteFlow</Link>
               </Button>
               <div className="cursor-pointer">
@@ -76,7 +71,7 @@ const Navbar = () => {
               </div>
             </div>
             {showCard && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 space-y-2">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 space-y-2 cursor-pointer">
                 <p className="text-sm text-gray-700 dark:text-gray-300 border-gray-400 rounded-md p-2 bg-accent">
                   {session.user.name}
                 </p>

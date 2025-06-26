@@ -9,16 +9,16 @@ import { Navigation } from "./_components/navigation";
 const Mainlayout = ({ children }: { children: ReactNode }) => {
   const { data: session, status } = useSession();
 
-  //   if (status === "loading") {
-  //     return (
-  //       <div className="flex items-center justify-center h-screen">
-  //         <Spinner size="lg" />
-  //       </div>
-  //     );
-  //   }
-  //   if (status === "unauthenticated") {
-  //     return redirect("/");
-  //   }
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+  if (status === "unauthenticated") {
+    return redirect("/");
+  }
 
   return (
     <div className="h-full flex dark:bg-[#1F1F1F] bg-background">

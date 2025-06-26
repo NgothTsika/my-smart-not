@@ -1,24 +1,53 @@
-"use client";
+"use client"
 
-import Image from "next/image";
+import * as React from "react"
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
-interface AvatarProps {
-  src: string | null | undefined;
+import { cn } from "@/lib/utils"
+
+function Avatar({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+  return (
+    <AvatarPrimitive.Root
+      data-slot="avatar"
+      className={cn(
+        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
-const Avatar: React.FC<AvatarProps> = ({ src }) => {
-  const fallbackImage = "/images/avatar.png"; // Default fallback image
-  const isValidSrc = src?.startsWith("http") || src?.startsWith("/");
-
+function AvatarImage({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
   return (
-    <Image
-      alt="Avatar"
-      className="rounded-full border border-yellow-400 dark:border-yellow-500"
-      height={30}
-      width={30}
-      src={isValidSrc ? src! : fallbackImage} // Use fallback if src is invalid
+    <AvatarPrimitive.Image
+      data-slot="avatar-image"
+      className={cn("aspect-square size-full", className)}
+      {...props}
     />
-  );
-};
+  )
+}
 
-export default Avatar;
+function AvatarFallback({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+  return (
+    <AvatarPrimitive.Fallback
+      data-slot="avatar-fallback"
+      className={cn(
+        "bg-muted flex size-full items-center justify-center rounded-full",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Avatar, AvatarImage, AvatarFallback }
