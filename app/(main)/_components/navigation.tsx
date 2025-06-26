@@ -8,6 +8,12 @@ import { useMediaQuery } from "usehooks-ts";
 import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
 
+// Define the type for a document
+type Document = {
+  id: string;
+  title: string;
+};
+
 export const Navigation = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -17,6 +23,25 @@ export const Navigation = () => {
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  const [documents, setDocuments] = useState<Document[]>([]); // State to store documents
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const response = await fetch("/api/documents"); // Replace with your actual API endpoint
+        if (response.ok) {
+          const data: Document[] = await response.json();
+          setDocuments(data);
+        } else {
+          console.error("Failed to fetch documents");
+        }
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -36,30 +61,31 @@ export const Navigation = () => {
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
-    e.stopPropagation(), (isResizingRef.current = true);
+    e.stopPropagation();
+    isResizingRef.current = true;
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isResizingRef.current) return;
-    {
-      let newWidth = e.clientX;
 
-      if (newWidth < 240) newWidth = 240; // Minimum width
-      if (newWidth > 480) newWidth = 480; // Maximum width
+    let newWidth = e.clientX;
 
-      if (sidebarRef.current && navbarRef.current) {
-        sidebarRef.current.style.width = `${newWidth}px`;
-        navbarRef.current.style.setProperty("left", `${newWidth}px`);
-        navbarRef.current.style.setProperty(
-          "width",
-          `calc(100% - ${newWidth}px)`
-        );
-      }
+    if (newWidth < 240) newWidth = 240; // Minimum width
+    if (newWidth > 480) newWidth = 480; // Maximum width
+
+    if (sidebarRef.current && navbarRef.current) {
+      sidebarRef.current.style.width = `${newWidth}px`;
+      navbarRef.current.style.setProperty("left", `${newWidth}px`);
+      navbarRef.current.style.setProperty(
+        "width",
+        `calc(100% - ${newWidth}px)`
+      );
     }
   };
-  const handleMouseUp = (e: MouseEvent) => {
+
+  const handleMouseUp = () => {
     isResizingRef.current = false;
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", handleMouseUp);
@@ -118,6 +144,13 @@ export const Navigation = () => {
         </div>
         <div className="mt-4">
           <p>Documents</p>
+          <ul className="mt-2 space-y-2">
+            {documents.map((doc) => (
+              <li key={doc.id} className="p-2 border rounded-md shadow">
+                {doc.title}
+              </li>
+            ))}
+          </ul>
         </div>
         <div
           onMouseDown={handleMouseDown}

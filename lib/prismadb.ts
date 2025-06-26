@@ -1,4 +1,3 @@
-// app/libs/prismadb.ts
 import { PrismaClient } from "./generated/prisma";
 
 declare global {
