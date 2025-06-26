@@ -1,12 +1,22 @@
 "use client";
 
-import { ChevronLeft, MenuIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  MenuIcon,
+  PlusCircle,
+  Search,
+  Settings,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ElementRef, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
+import Item from "./item";
 
 // Define the type for a document
 type Document = {
@@ -17,13 +27,15 @@ type Document = {
 export const Navigation = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const { data: session } = useSession();
+  const router = useRouter();
 
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const [documents, setDocuments] = useState<Document[]>([]); // State to store documents
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -119,6 +131,45 @@ export const Navigation = () => {
     }
   };
 
+  const handleCreate = async () => {
+    const res = await fetch("/api/documents/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: "Untitled",
+        parentDocumentId: null,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Navigate to the new document page if needed
+      router.push(`/documents/${data.id}`);
+      toast.promise(
+        Promise.resolve(),
+        {
+          loading: "Creating a new note...",
+          success: "New note created!",
+          error: "Failed to create document.",
+        },
+        {
+          position: "bottom-center",
+          duration: 3000,
+        }
+      );
+    } else if (data.error === "Unauthorized") {
+      console.error("Unauthorized access:", data.error);
+      alert("You must be logged in to create a document.");
+      router.push("/auth"); // Redirect to the login page
+    } else {
+      console.error("Failed to create document:", data.error);
+      alert("Something went wrong.");
+    }
+  };
+
   return (
     <>
       <aside
@@ -141,16 +192,20 @@ export const Navigation = () => {
         </div>
         <div>
           <UserItem />
+          <Item onClick={() => {}} label="Search" icon={Search} isSearch />
+          <Item onClick={() => {}} label="Settings" icon={Settings} />
+          <Item onClick={handleCreate} label="New page" icon={PlusCircle} />
         </div>
         <div className="mt-4">
-          <p>Documents</p>
-          <ul className="mt-2 space-y-2">
-            {documents.map((doc) => (
-              <li key={doc.id} className="p-2 border rounded-md shadow">
-                {doc.title}
-              </li>
-            ))}
-          </ul>
+          {documents.length === 0 && (
+            <p className="text-sm text-muted-foreground">No documents yet.</p>
+          )}
+
+          {documents.map((doc) => (
+            <p key={doc.id} className="p-2 border rounded-md shadow">
+              {doc.title}
+            </p>
+          ))}
         </div>
         <div
           onMouseDown={handleMouseDown}
