@@ -1,8 +1,7 @@
-// document-list.tsx
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Item } from "./item";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "lucide-react";
@@ -77,7 +76,7 @@ export const DocumentList = ({
             <DocumentList
               parentDocumentId={doc.id}
               level={level + 1}
-              data={data} // 💡 Pass ALL documents for recursive access
+              data={data}
             />
           )}
         </div>

@@ -3,6 +3,7 @@
 import {
   ChevronLeft,
   MenuIcon,
+  Plus,
   PlusCircle,
   Search,
   Settings,
@@ -110,7 +111,8 @@ export const Navigation = () => {
       const data = await res.json();
 
       if (res.ok) {
-        router.push(`/documents/${data.id}`);
+        //TODO
+        // router.push(`/documents/${data.id}`);
         toast.success("New note created!");
         setDocuments((prev) => [data, ...prev]); // Refresh sidebar list
       } else if (data.error === "Unauthorized") {
@@ -153,6 +155,7 @@ export const Navigation = () => {
         </div>
         <div className="mt-4">
           <DocumentList data={documents} />
+          <Item onClick={handleCreate} icon={Plus} label="Add a page" />
         </div>
         <div
           onMouseDown={handleMouseDown}

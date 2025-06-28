@@ -24,9 +24,22 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const url = new URL(req.url);
+    const queryParams = Object.fromEntries(url.searchParams.entries());
+    const parsed = ParamsSchema.safeParse(queryParams);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid query parameters" },
+        { status: 400 }
+      );
+    }
+
     const documents = await prisma.document.findMany({
       where: {
         userId: user.id,
+        isArchived: false, // 🧹 Exclude archived
+        // parentDocumentId: parsed.data.parentDocument ?? null,
       },
       orderBy: {
         createdAt: "desc",

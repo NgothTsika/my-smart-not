@@ -25,7 +25,6 @@ const Documentspage = () => {
     const data = await res.json();
 
     if (res.ok) {
-      // Navigate to the new document page if needed
       router.push(`/documents/${data.id}`);
       toast.promise(
         Promise.resolve(),
@@ -42,7 +41,7 @@ const Documentspage = () => {
     } else if (data.error === "Unauthorized") {
       console.error("Unauthorized access:", data.error);
       alert("You must be logged in to create a document.");
-      router.push("/auth"); // Redirect to the login page
+      router.push("/auth");
     } else {
       console.error("Failed to create document:", data.error);
       alert("Something went wrong.");
