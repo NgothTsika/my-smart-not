@@ -1,16 +1,14 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  LucideIcon,
-  ChevronDown,
-  ChevronRight,
-  ChevronsDown,
-} from "lucide-react";
+import { LucideIcon, ChevronRight, ChevronsDown, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface ItemProps {
   id?: string;
-  documentIcon?: boolean;
+  documentIcon?: string | boolean;
   active?: boolean;
   expanded?: boolean;
   isSearch?: boolean;
@@ -21,7 +19,7 @@ interface ItemProps {
   icon: LucideIcon;
 }
 
-const Item = ({
+export const Item = ({
   id,
   documentIcon,
   active,
@@ -33,39 +31,98 @@ const Item = ({
   onClick,
   icon: Icon,
 }: ItemProps) => {
+  const router = useRouter();
+
+  const handleExpand = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    event.stopPropagation();
+    onExpand?.();
+  };
+
+  const onCreate = async (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    event.stopPropagation();
+    if (!id) return;
+
+    const promise = fetch("/api/documents/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Untitled", parentDocumentId: id }),
+    }).then(async (res) => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create");
+      if (!expanded) onExpand?.();
+      router.push(`/documents/${data.id}`);
+    });
+
+    toast.promise(promise, {
+      loading: "Creating document...",
+      success: "Document created successfully!",
+      error: "Failed to create document.",
+    });
+  };
+
   const ChevronIcon = expanded ? ChevronsDown : ChevronRight;
+
   return (
     <div
       onClick={onClick}
       role="button"
       style={{ paddingLeft: level ? `${level * 12 + 12}px` : "12px" }}
       className={cn(
-        "group min-h-[27px] text-sm py-1 pr-3 w-full hover:bg-primary/5 flex items-center text-muted-foreground font-medium ",
+        "group min-h-[27px] text-sm py-1 pr-3 w-full hover:bg-primary/5 flex items-center text-muted-foreground font-medium",
         active && "bg-primary/5 text-primary"
       )}
     >
       {!!id && (
         <div
           role="button"
-          className=" h-full rounded-sm hover:bg-neutral-300 dark:bg-neutral-600 mr-1"
-          onClick={() => {}}
+          onClick={handleExpand}
+          className="h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1"
         >
           <ChevronIcon className="h-4 w-4 mr-2 shrink-0 text-muted-foreground/50" />
         </div>
       )}
+
       {documentIcon ? (
-        <div className=" shrink-0 mr-2 text-[18px]">{documentIcon}</div>
+        <div className="shrink-0 mr-2 text-[18px]">{documentIcon}</div>
       ) : (
-        <Icon className="h-[18px] mr-2 shrink-0 text-muted-foreground " />
+        <Icon className="h-[18px] mr-2 shrink-0 text-muted-foreground" />
       )}
+
       <span className="truncate">{label}</span>
+
       {isSearch && (
         <kbd className="ml-auto pointer-events-none items-center bg-muted select-none h-5 inline-flex border text-xs gap-1 rounded px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
           <span className="text-xs text-muted-foreground ml-1">CDN</span>K
         </kbd>
       )}
+
+      {!!id && (
+        <div className="ml-auto flex items-center gap-x-2">
+          <div
+            role="button"
+            onClick={onCreate}
+            className="opacity-0 group-hover:opacity-100 h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600"
+          >
+            <Plus className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Item;
+Item.Skeleton = function ItemSkeleton({ level }: { level?: number }) {
+  return (
+    <div
+      style={{ paddingLeft: level ? `${level * 12 + 12}px` : "12px" }}
+      className="flex gap-x-2 py-[3px]"
+    >
+      <Skeleton className="h-4 w-4" />
+      <Skeleton className="h-4 w-[30%]" />
+    </div>
+  );
+};

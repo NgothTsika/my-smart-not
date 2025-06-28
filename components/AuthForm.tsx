@@ -166,12 +166,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onClose }) => {
           <div>
             <p className="mt-6 text-sm text-center gap-2 text-gray-500">
               {variant === "LOGIN"
-                ? "New to kamaChat?"
+                ? "New to NOTEFLOW. ?"
                 : "Already have an account?"}{" "}
               <button
                 onClick={toggleVariant}
                 type="button"
-                className="hover:underline cursor-pointer font-semibold text-sky-600 hover:text-sky-500"
+                className="hover:underline cursor-pointer font-semibold text-black hover:text-sky-500"
               >
                 {variant === "LOGIN" ? "Create an account" : "Login"}
               </button>

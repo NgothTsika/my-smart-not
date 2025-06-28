@@ -7,29 +7,28 @@ import {
   Search,
   Settings,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ElementRef, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
-import Item from "./item";
+import { Item } from "./item";
+import { DocumentList } from "./document-list";
 
-// Define the type for a document
-type Document = {
+interface Document {
   id: string;
   title: string;
-};
+  icon?: string;
+  parentDocumentId: string | null;
+}
 
 export const Navigation = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const { data: session } = useSession();
   const router = useRouter();
+  const [documents, setDocuments] = useState<Document[]>([]);
 
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
@@ -38,42 +37,26 @@ export const Navigation = () => {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
   useEffect(() => {
+    if (isMobile) collapse();
+    else resetWidth();
+  }, [pathname, isMobile]);
+
+  useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await fetch("/api/documents"); // Replace with your actual API endpoint
-        if (response.ok) {
-          const data: Document[] = await response.json();
-          setDocuments(data);
-        } else {
-          console.error("Failed to fetch documents");
-        }
-      } catch (error) {
-        console.error("Error fetching documents:", error);
+        const res = await fetch("/api/documents");
+        const data = await res.json();
+        if (res.ok) setDocuments(data);
+        else console.error("Error fetching documents:", data.error);
+      } catch (err) {
+        console.error("Fetch exception:", err);
       }
     };
-
     fetchDocuments();
   }, []);
 
-  useEffect(() => {
-    if (isMobile) {
-      collapse();
-    } else {
-      resetWidth();
-    }
-  }, [isMobile]);
-
-  useEffect(() => {
-    if (isMobile) {
-      collapse();
-    } else {
-      resetWidth();
-    }
-  }, [pathname, isMobile]);
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     isResizingRef.current = true;
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
@@ -81,19 +64,11 @@ export const Navigation = () => {
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isResizingRef.current) return;
-
-    let newWidth = e.clientX;
-
-    if (newWidth < 240) newWidth = 240; // Minimum width
-    if (newWidth > 480) newWidth = 480; // Maximum width
-
+    let newWidth = Math.max(240, Math.min(480, e.clientX));
     if (sidebarRef.current && navbarRef.current) {
       sidebarRef.current.style.width = `${newWidth}px`;
-      navbarRef.current.style.setProperty("left", `${newWidth}px`);
-      navbarRef.current.style.setProperty(
-        "width",
-        `calc(100% - ${newWidth}px)`
-      );
+      navbarRef.current.style.left = `${newWidth}px`;
+      navbarRef.current.style.width = `calc(100% - ${newWidth}px)`;
     }
   };
 
@@ -107,14 +82,9 @@ export const Navigation = () => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(false);
       setIsResetting(true);
-
       sidebarRef.current.style.width = isMobile ? "100%" : "240px";
-      navbarRef.current.style.setProperty(
-        "width",
-        isMobile ? "0" : "calc(100% - 240px)"
-      );
-
-      navbarRef.current.style.setProperty("left", isMobile ? "100%" : "240px");
+      navbarRef.current.style.width = isMobile ? "0" : "calc(100% - 240px)";
+      navbarRef.current.style.left = isMobile ? "100%" : "240px";
       setTimeout(() => setIsResetting(false), 300);
     }
   };
@@ -123,50 +93,35 @@ export const Navigation = () => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(true);
       setIsResetting(true);
-
       sidebarRef.current.style.width = "0";
-      navbarRef.current.style.setProperty("width", "100%");
-      navbarRef.current.style.setProperty("left", "0");
+      navbarRef.current.style.width = "100%";
+      navbarRef.current.style.left = "0";
       setTimeout(() => setIsResetting(false), 300);
     }
   };
 
   const handleCreate = async () => {
-    const res = await fetch("/api/documents/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: "Untitled",
-        parentDocumentId: null,
-      }),
-    });
+    try {
+      const res = await fetch("/api/documents/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Untitled", parentDocumentId: null }),
+      });
+      const data = await res.json();
 
-    const data = await res.json();
-
-    if (res.ok) {
-      // Navigate to the new document page if needed
-      router.push(`/documents/${data.id}`);
-      toast.promise(
-        Promise.resolve(),
-        {
-          loading: "Creating a new note...",
-          success: "New note created!",
-          error: "Failed to create document.",
-        },
-        {
-          position: "bottom-center",
-          duration: 3000,
-        }
-      );
-    } else if (data.error === "Unauthorized") {
-      console.error("Unauthorized access:", data.error);
-      alert("You must be logged in to create a document.");
-      router.push("/auth"); // Redirect to the login page
-    } else {
-      console.error("Failed to create document:", data.error);
-      alert("Something went wrong.");
+      if (res.ok) {
+        router.push(`/documents/${data.id}`);
+        toast.success("New note created!");
+        setDocuments((prev) => [data, ...prev]); // Refresh sidebar list
+      } else if (data.error === "Unauthorized") {
+        alert("You must be logged in to create a document.");
+        router.push("/auth");
+      } else {
+        toast.error("Something went wrong.");
+      }
+    } catch (err) {
+      toast.error("Error creating document.");
+      console.error(err);
     }
   };
 
@@ -197,15 +152,7 @@ export const Navigation = () => {
           <Item onClick={handleCreate} label="New page" icon={PlusCircle} />
         </div>
         <div className="mt-4">
-          {documents.length === 0 && (
-            <p className="text-sm text-muted-foreground">No documents yet.</p>
-          )}
-
-          {documents.map((doc) => (
-            <p key={doc.id} className="p-2 border rounded-md shadow">
-              {doc.title}
-            </p>
-          ))}
+          <DocumentList data={documents} />
         </div>
         <div
           onMouseDown={handleMouseDown}
@@ -216,7 +163,7 @@ export const Navigation = () => {
       <div
         ref={navbarRef}
         className={cn(
-          " absolute top-0 z-[99999] left-60 w-[calc(100%-240px)]",
+          "absolute top-0 z-[99999] left-60 w-[calc(100%-240px)]",
           isResetting && "transition-all duration-300 ease-in-out",
           isMobile && "left-0 w-full"
         )}

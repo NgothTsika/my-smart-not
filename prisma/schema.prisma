@@ -63,7 +63,7 @@ model Document {
   userId           String
   isArchived       Boolean
   parentDocumentId String?
-  createdAt        DateTime   @default(now()) 
+  createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   content          String?
   coverImage       String?
