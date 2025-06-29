@@ -7,6 +7,7 @@ import { Search, Trash2, Undo2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { ConfirmModal } from "@/components/modals/confirm-modal";
 
 interface Document {
   id: string;
@@ -111,13 +112,11 @@ const TrashBox = () => {
               >
                 <Undo2 className="h-4 w-4 mr-1" />
               </Button>
-              <Button
-                onClick={() => handlePermanentDelete(doc.id)}
-                variant="ghost"
-                size="sm"
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-              </Button>
+              <ConfirmModal onConfirm={() => handlePermanentDelete(doc.id)}>
+                <Button variant="ghost" size="sm">
+                  <Trash2 className="h-4 w-4 mr-1" />
+                </Button>
+              </ConfirmModal>
             </div>
           </div>
         ))}
