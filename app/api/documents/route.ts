@@ -38,8 +38,7 @@ export async function GET(req: Request) {
     const documents = await prisma.document.findMany({
       where: {
         userId: user.id,
-        isArchived: false, // 🧹 Exclude archived
-        // parentDocumentId: parsed.data.parentDocument ?? null,
+        isArchived: false, // Only non-archived
       },
       orderBy: {
         createdAt: "desc",

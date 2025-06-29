@@ -57,17 +57,12 @@ const Navbar = () => {
         )}
         {status === "authenticated" && session?.user && (
           <div className="relative">
-            <div
-              onClick={handleAvatarClick}
-              className="cursor-pointer flex item-center gap-x-2"
-            >
+            <div className="cursor-pointer flex item-center gap-x-2">
               <Button size="sm" variant="ghost" asChild>
                 <Link href="/documents">Enter NoteFlow</Link>
               </Button>
-              <div className="cursor-pointer">
-                <Avatar
-                  src={session.user.image || null} // Replace with the actual avatar URL from the session
-                />
+              <div onClick={handleAvatarClick} className="cursor-pointer">
+                <Avatar src={session.user.image || null} />
               </div>
             </div>
             {showCard && (

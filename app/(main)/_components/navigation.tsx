@@ -7,6 +7,7 @@ import {
   PlusCircle,
   Search,
   Settings,
+  Trash,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { ElementRef, useEffect, useRef, useState } from "react";
@@ -17,6 +18,12 @@ import { cn } from "@/lib/utils";
 import { UserItem } from "./user-item";
 import { Item } from "./item";
 import { DocumentList } from "./document-list";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import TrashBox from "./trash-box";
 
 interface Document {
   id: string;
@@ -37,24 +44,29 @@ export const Navigation = () => {
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
+  // Fetch active documents only
+  const fetchDocuments = async () => {
+    try {
+      const res = await fetch("/api/documents");
+      const data = await res.json();
+      if (res.ok) {
+        setDocuments(data);
+      } else {
+        console.error("Error fetching documents:", data.error);
+      }
+    } catch (err) {
+      console.error("Fetch exception:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
   useEffect(() => {
     if (isMobile) collapse();
     else resetWidth();
   }, [pathname, isMobile]);
-
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const res = await fetch("/api/documents");
-        const data = await res.json();
-        if (res.ok) setDocuments(data);
-        else console.error("Error fetching documents:", data.error);
-      } catch (err) {
-        console.error("Fetch exception:", err);
-      }
-    };
-    fetchDocuments();
-  }, []);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -108,13 +120,13 @@ export const Navigation = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Untitled", parentDocumentId: null }),
       });
+
       const data = await res.json();
 
       if (res.ok) {
-        //TODO
-        // router.push(`/documents/${data.id}`);
         toast.success("New note created!");
-        setDocuments((prev) => [data, ...prev]); // Refresh sidebar list
+        setDocuments((prev) => [data, ...prev]); // Add new document to sidebar
+        router.push(`/documents/${data.id}`);
       } else if (data.error === "Unauthorized") {
         alert("You must be logged in to create a document.");
         router.push("/auth");
@@ -147,22 +159,41 @@ export const Navigation = () => {
         >
           <ChevronLeft className="w-6 h-6" />
         </div>
+
+        {/* Sidebar Header */}
         <div>
           <UserItem />
           <Item onClick={() => {}} label="Search" icon={Search} isSearch />
           <Item onClick={() => {}} label="Settings" icon={Settings} />
           <Item onClick={handleCreate} label="New page" icon={PlusCircle} />
         </div>
+
+        {/* Sidebar Content */}
         <div className="mt-4">
           <DocumentList data={documents} />
           <Item onClick={handleCreate} icon={Plus} label="Add a page" />
+
+          <Popover>
+            <PopoverTrigger className="w-full mt-4">
+              <Item label="Trash" icon={Trash} />
+            </PopoverTrigger>
+            <PopoverContent
+              side={isMobile ? "bottom" : "right"}
+              className="p-0 w-72"
+            >
+              <TrashBox />
+            </PopoverContent>
+          </Popover>
         </div>
+
+        {/* Resize handler */}
         <div
           onMouseDown={handleMouseDown}
           onClick={resetWidth}
           className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
         />
       </aside>
+
       <div
         ref={navbarRef}
         className={cn(
