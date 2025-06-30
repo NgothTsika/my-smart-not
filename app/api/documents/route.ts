@@ -4,7 +4,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prismadb";
 import { z } from "zod";
 
-// Optional: Add Zod validation like Convex's v.id
 const ParamsSchema = z.object({
   parentDocument: z.string().optional(),
 });
@@ -38,7 +37,8 @@ export async function GET(req: Request) {
     const documents = await prisma.document.findMany({
       where: {
         userId: user.id,
-        isArchived: false, // Only non-archived
+        isArchived: false,
+        // parentDocumentId: parsed.data.parentDocument ?? null,
       },
       orderBy: {
         createdAt: "desc",

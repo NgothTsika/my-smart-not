@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import ToasterProvider from "@/components/providers/ToasterProvider";
 import AuthContext from "@/context/AuthContext";
+import { ModalProvider } from "@/components/providers/modal-provider";
 
 const poppinsRegular = localFont({
   src: "./fonts/Inter-VariableFont_opsz,wght.ttf",
@@ -57,6 +58,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <ToasterProvider />
+            <ModalProvider />
             {children}
           </ThemeProvider>
         </AuthContext>

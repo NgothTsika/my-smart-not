@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 import { Navigation } from "./_components/navigation";
+import { SearchCommand } from "@/components/search-command";
 
 const Mainlayout = ({ children }: { children: ReactNode }) => {
   const { data: session, status } = useSession();
@@ -23,7 +24,10 @@ const Mainlayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="h-full flex dark:bg-[#1F1F1F] bg-background">
       <Navigation />
-      <div className=" flex-1 h-full overflow-y-auto">{children}</div>
+      <div className=" flex-1 h-full overflow-y-auto">
+        <SearchCommand />
+        {children}
+      </div>
     </div>
   );
 };
