@@ -3,10 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 
 interface TitleProps {
   initialData: string;
-  documentId?: string; // If you want to send PATCH request
+  documentId: string;
 }
 
 const Title = ({ initialData, documentId }: TitleProps) => {
@@ -14,7 +15,6 @@ const Title = ({ initialData, documentId }: TitleProps) => {
   const [title, setTitle] = useState(initialData);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input when editing starts
   useEffect(() => {
     if (isEditing) {
       inputRef.current?.focus();
@@ -24,17 +24,22 @@ const Title = ({ initialData, documentId }: TitleProps) => {
   const handleSubmit = async () => {
     setIsEditing(false);
 
-    // Optionally update to backend
-    if (documentId) {
-      try {
-        await fetch(`/api/documents/${documentId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title }),
-        });
-      } catch (error) {
-        console.error("Failed to update title", error);
-      }
+    try {
+      const res = await fetch(`/api/documents/${documentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to update");
+
+      // Optional: show success toast
+      toast.success("Title updated!");
+    } catch (error) {
+      console.error("Error updating title:", error);
+      toast.error("Failed to update title.");
     }
   };
 
