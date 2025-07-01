@@ -1,7 +1,6 @@
 "use client";
 
 import { PanelLeft } from "lucide-react";
-import { boolean } from "zod";
 import Title from "./title";
 
 interface NavbarProps {
