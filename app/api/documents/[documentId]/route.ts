@@ -1,16 +1,16 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "@/lib/prismadb";
 import { NextRequest, NextResponse } from "next/server";
+import { authOptions } from "../../auth/[...nextauth]/route";
+import prisma from "@/lib/prismadb";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { documentId: string } }
+  context: { params: { documentId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -21,19 +21,42 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { title } = await req.json();
-
-    const document = await prisma.document.update({
-      where: {
-        id: params.documentId,
-        userId: user.id,
-      },
-      data: { title },
+    const { documentId } = context.params;
+    const existingDocument = await prisma.document.findUnique({
+      where: { id: documentId },
     });
 
-    return NextResponse.json(document);
+    if (!existingDocument) {
+      return NextResponse.json(
+        { error: "Document not found" },
+        { status: 404 }
+      );
+    }
+
+    if (existingDocument.userId !== user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { title, content, coverImage, icon, isPublished } = body;
+
+    const updatedDocument = await prisma.document.update({
+      where: { id: documentId },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(content !== undefined && { content }),
+        ...(coverImage !== undefined && { coverImage }),
+        ...(icon !== undefined && { icon }),
+        ...(isPublished !== undefined && { isPublished }),
+      },
+    });
+
+    return NextResponse.json(updatedDocument);
   } catch (error) {
-    console.error("[DOCUMENT_PATCH]", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("[UPDATE_DOCUMENT_ERROR]", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
