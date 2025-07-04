@@ -5,14 +5,19 @@ import prisma from "@/lib/prismadb";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { documentId: string } }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = params;
+  const { documentId } = context.params;
 
   try {
     const document = await prisma.document.findUnique({
       where: { id: documentId },
-      select: { title: true },
+      select: {
+        id: true,
+        title: true,
+        parentDocumentId: true,
+        icon: true,
+      },
     });
 
     if (!document) {
@@ -22,7 +27,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ title: document.title }, { status: 200 });
+    return NextResponse.json(document, { status: 200 });
   } catch (error) {
     console.error("[GET_DOCUMENT_ERROR]", error);
     return NextResponse.json(
@@ -34,9 +39,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { documentId: string } }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = params;
+  const { documentId } = context.params;
 
   try {
     const session = await getServerSession(authOptions);
