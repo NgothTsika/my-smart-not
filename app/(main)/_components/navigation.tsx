@@ -28,13 +28,14 @@ import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { NavBar } from "./navbar";
 
-import { useDocumentStore } from "@/stores/use-document-store"; // ✅ Zustand import
+import { useDocumentStore } from "@/stores/use-document-store";
 
 interface Document {
   id: string;
   title: string;
   icon?: string;
   parentDocumentId: string | null;
+  isArchived?: boolean;
 }
 
 export const Navigation = () => {
@@ -84,9 +85,9 @@ export const Navigation = () => {
           title: data.title,
           parentDocumentId: data.parentDocumentId ?? null,
           icon: data.icon ?? undefined,
+          isArchived: data.isArchived,
         });
 
-        // Update Zustand store title in case it's edited elsewhere
         updateTitle(documentId, data.title);
       } else if (res.status === 404) {
         router.push("/documents");
@@ -167,7 +168,7 @@ export const Navigation = () => {
       const data = await res.json();
 
       if (res.ok) {
-        addDocument(data); // ✅ ONLY this — it updates Zustand
+        addDocument(data);
         toast.success("New note created!");
         router.push(`/documents/${data.id}`);
       } else if (data.error === "Unauthorized") {

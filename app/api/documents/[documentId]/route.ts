@@ -17,6 +17,7 @@ export async function GET(
         title: true,
         parentDocumentId: true,
         icon: true,
+        isArchived: true,
       },
     });
 

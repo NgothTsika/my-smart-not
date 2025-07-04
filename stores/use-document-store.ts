@@ -39,7 +39,7 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       documents: state.documents.filter((doc) => doc.id !== id),
     })),
 
-  restoreDocument: (doc) =>
+  restoreDocument: (doc: Document) =>
     set((state) => ({
       documents: [doc, ...state.documents],
     })),
