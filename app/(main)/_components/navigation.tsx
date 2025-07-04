@@ -45,6 +45,7 @@ export const Navigation = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [currentDocument, setCurrentDocument] = useState<Document | null>(null);
 
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
@@ -52,18 +53,40 @@ export const Navigation = () => {
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
-  // Fetch active documents only
   const fetchDocuments = async () => {
     try {
       const res = await fetch("/api/documents");
       const data = await res.json();
-      if (res.ok) {
-        setDocuments(data);
-      } else {
-        console.error("Error fetching documents:", data.error);
-      }
+      if (res.ok) setDocuments(data);
+      else console.error("Error fetching documents:", data.error);
     } catch (err) {
       console.error("Fetch exception:", err);
+    }
+  };
+
+  const fetchCurrentDocument = async () => {
+    const rawId = params.documentId;
+
+    // 🔒 Safely ensure it's a string
+    const documentId = Array.isArray(rawId) ? rawId[0] : rawId;
+
+    if (!documentId) return;
+
+    try {
+      const res = await fetch(`/api/documents/${documentId}`);
+      const data = await res.json();
+      if (res.ok) {
+        setCurrentDocument({
+          id: documentId,
+          title: data.title,
+          parentDocumentId: data.parentDocumentId ?? null,
+          icon: data.icon ?? undefined, // optional
+        });
+      } else {
+        console.error("Error loading document title:", data.error);
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
     }
   };
 
@@ -75,6 +98,10 @@ export const Navigation = () => {
     if (isMobile) collapse();
     else resetWidth();
   }, [pathname, isMobile]);
+
+  useEffect(() => {
+    fetchCurrentDocument();
+  }, [params.documentId]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -133,7 +160,7 @@ export const Navigation = () => {
 
       if (res.ok) {
         toast.success("New note created!");
-        setDocuments((prev) => [data, ...prev]); // Add new document to sidebar
+        setDocuments((prev) => [data, ...prev]);
         router.push(`/documents/${data.id}`);
       } else if (data.error === "Unauthorized") {
         alert("You must be logged in to create a document.");
@@ -168,7 +195,6 @@ export const Navigation = () => {
           <ChevronLeft className="w-6 h-6" />
         </div>
 
-        {/* Sidebar Header */}
         <div>
           <UserItem />
           <Item onClick={search.onOpen} label="Search" icon={Search} isSearch />
@@ -176,7 +202,6 @@ export const Navigation = () => {
           <Item onClick={handleCreate} label="New page" icon={PlusCircle} />
         </div>
 
-        {/* Sidebar Content */}
         <div className="mt-4">
           <DocumentList data={documents} />
           <Item onClick={handleCreate} icon={Plus} label="Add a page" />
@@ -194,7 +219,6 @@ export const Navigation = () => {
           </Popover>
         </div>
 
-        {/* Resize handler */}
         <div
           onMouseDown={handleMouseDown}
           onClick={resetWidth}
@@ -211,7 +235,11 @@ export const Navigation = () => {
         )}
       >
         {!!params.documentId ? (
-          <NavBar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
+          <NavBar
+            isCollapsed={isCollapsed}
+            onResetWidth={resetWidth}
+            document={currentDocument}
+          />
         ) : (
           <nav className="bg-transparent px-3 py-2 w-full ">
             {isCollapsed && (

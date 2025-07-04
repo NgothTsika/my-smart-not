@@ -1,12 +1,43 @@
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prismadb";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { documentId: string } }
+) {
+  const { documentId } = params;
+
+  try {
+    const document = await prisma.document.findUnique({
+      where: { id: documentId },
+      select: { title: true },
+    });
+
+    if (!document) {
+      return NextResponse.json(
+        { error: "Document not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ title: document.title }, { status: 200 });
+  } catch (error) {
+    console.error("[GET_DOCUMENT_ERROR]", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { documentId: string } }
+  { params }: { params: { documentId: string } }
 ) {
+  const { documentId } = params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -21,7 +52,6 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { documentId } = context.params;
     const existingDocument = await prisma.document.findUnique({
       where: { id: documentId },
     });
@@ -38,20 +68,14 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { title, content, coverImage, icon, isPublished } = body;
+    const { title } = body;
 
     const updatedDocument = await prisma.document.update({
       where: { id: documentId },
-      data: {
-        ...(title !== undefined && { title }),
-        ...(content !== undefined && { content }),
-        ...(coverImage !== undefined && { coverImage }),
-        ...(icon !== undefined && { icon }),
-        ...(isPublished !== undefined && { isPublished }),
-      },
+      data: { title },
     });
 
-    return NextResponse.json(updatedDocument);
+    return NextResponse.json(updatedDocument, { status: 200 });
   } catch (error) {
     console.error("[UPDATE_DOCUMENT_ERROR]", error);
     return NextResponse.json(

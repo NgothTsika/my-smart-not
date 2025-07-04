@@ -11,7 +11,7 @@ interface Document {
 interface NavbarProps {
   isCollapsed: boolean;
   onResetWidth: () => void;
-  document?: Document | null; // <-- optional
+  document?: Document | null;
 }
 
 export const NavBar = ({

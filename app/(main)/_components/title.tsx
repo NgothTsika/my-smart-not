@@ -21,6 +21,10 @@ const Title = ({ initialData, documentId }: TitleProps) => {
     }
   }, [isEditing]);
 
+  useEffect(() => {
+    setTitle(initialData);
+  }, [initialData]);
+
   const handleSubmit = async () => {
     setIsEditing(false);
 
@@ -31,21 +35,15 @@ const Title = ({ initialData, documentId }: TitleProps) => {
         body: JSON.stringify({ title }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Failed to update");
-
-      // Optional: show success toast
-      toast.success("Title updated!");
+      if (res.ok) {
+        toast.success("Title updated successfully!");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to update title.");
+      }
     } catch (error) {
-      console.error("Error updating title:", error);
       toast.error("Failed to update title.");
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSubmit();
+      console.error("Error updating title:", error);
     }
   };
 
@@ -54,22 +52,28 @@ const Title = ({ initialData, documentId }: TitleProps) => {
       {isEditing ? (
         <Input
           ref={inputRef}
-          className="h-7 px-2 focus-visible:ring-transparent"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={handleSubmit}
-          onKeyDown={handleKeyDown}
+          className="text-sm font-medium"
         />
       ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="font-normal h-auto p-1"
+        <span
+          role="button"
           onClick={() => setIsEditing(true)}
+          className="text-sm font-medium cursor-pointer"
         >
           {title || "Untitled"}
-        </Button>
+        </span>
       )}
+      <Button
+        onClick={() => setIsEditing(true)}
+        variant="ghost"
+        size="sm"
+        className="text-muted-foreground"
+      >
+        Edit
+      </Button>
     </div>
   );
 };
