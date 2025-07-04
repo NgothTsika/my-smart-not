@@ -5,27 +5,21 @@ import React, { useState } from "react";
 import { Item } from "./item";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "lucide-react";
-
-interface Document {
-  id: string;
-  title: string;
-  icon?: string;
-  parentDocumentId?: string | null;
-}
+import { useDocumentStore } from "@/stores/use-document-store";
 
 interface DocumentListProps {
   parentDocumentId?: string | null;
   level?: number;
-  data: Document[];
 }
 
 export const DocumentList = ({
   parentDocumentId = null,
   level = 0,
-  data = [],
 }: DocumentListProps) => {
   const params = useParams();
   const router = useRouter();
+  const documents = useDocumentStore((state) => state.documents);
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const onExpand = (documentId: string) => {
@@ -39,7 +33,7 @@ export const DocumentList = ({
     router.push(`/documents/${documentId}`);
   };
 
-  const filteredDocuments = data.filter(
+  const filteredDocuments = documents.filter(
     (doc) => doc.parentDocumentId === parentDocumentId
   );
 
@@ -73,11 +67,7 @@ export const DocumentList = ({
             expanded={expanded[doc.id]}
           />
           {expanded[doc.id] && (
-            <DocumentList
-              parentDocumentId={doc.id}
-              level={level + 1}
-              data={data}
-            />
+            <DocumentList parentDocumentId={doc.id} level={level + 1} />
           )}
         </div>
       ))}

@@ -17,7 +17,8 @@ import {
   MoreHorizontal,
   Trash,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { useDocumentStore } from "@/stores/use-document-store";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 
@@ -47,7 +48,11 @@ export const Item = ({
   icon: Icon,
 }: ItemProps) => {
   const router = useRouter();
+  const params = useParams();
   const { data: session } = useSession();
+
+  const addDocument = useDocumentStore((state) => state.addDocument);
+  const removeDocument = useDocumentStore((state) => state.removeDocument);
 
   const handleExpand = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -64,6 +69,14 @@ export const Item = ({
 
     const promise = fetch(`/api/documents/${id}/archive`, {
       method: "PATCH",
+    }).then(async (res) => {
+      if (!res.ok) throw new Error("Archive failed");
+
+      removeDocument(id); // ✅ Update Zustand
+
+      if (params.documentId === id) {
+        router.push("/documents");
+      }
     });
 
     toast.promise(promise, {
@@ -87,6 +100,7 @@ export const Item = ({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create");
       if (!expanded) onExpand?.();
+      addDocument(data);
       router.push(`/documents/${data.id}`);
     });
 

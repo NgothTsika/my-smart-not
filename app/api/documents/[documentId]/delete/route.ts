@@ -26,7 +26,6 @@ export async function DELETE(
       );
     }
 
-    // Delete children first (cascade manually if DB doesn't support it)
     await prisma.document.deleteMany({
       where: { parentDocumentId: documentId },
     });

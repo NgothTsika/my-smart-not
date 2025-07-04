@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
+import { useDocumentStore } from "@/stores/use-document-store";
 
 interface Document {
   id: string;
@@ -16,6 +17,8 @@ interface Document {
 
 const TrashBox = () => {
   const router = useRouter();
+  const params = useParams();
+  const restoreDocument = useDocumentStore((state) => state.restoreDocument);
   const [documents, setDocuments] = useState<Document[] | undefined>(undefined);
   const [search, setSearch] = useState("");
 
@@ -36,8 +39,13 @@ const TrashBox = () => {
   const handleRestore = async (id: string) => {
     const promise = fetch(`/api/documents/${id}/restore`, {
       method: "PATCH",
-    }).then(() => {
-      setDocuments((prev) => prev?.filter((doc) => doc.id !== id));
+    }).then(async (res) => {
+      if (!res.ok) throw new Error("Restore failed");
+
+      const data = await res.json();
+
+      restoreDocument(data); // ✅ Updates Zustand (re-renders sidebar)
+      setDocuments((prev) => prev?.filter((doc) => doc.id !== id)); // ✅ Clean trash view
     });
 
     toast.promise(promise, {
@@ -52,6 +60,10 @@ const TrashBox = () => {
       method: "DELETE",
     }).then(() => {
       setDocuments((prev) => prev?.filter((doc) => doc.id !== id));
+
+      if (params.documentId === id) {
+        router.push("/documents");
+      }
     });
 
     toast.promise(promise, {

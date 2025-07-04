@@ -24,10 +24,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import TrashBox from "./trash-box";
-
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { NavBar } from "./navbar";
+
+import { useDocumentStore } from "@/stores/use-document-store"; // ✅ Zustand import
 
 interface Document {
   id: string;
@@ -44,7 +45,11 @@ export const Navigation = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
-  const [documents, setDocuments] = useState<Document[]>([]);
+
+  const setDocuments = useDocumentStore((state) => state.setDocuments);
+  const updateTitle = useDocumentStore((state) => state.updateTitle);
+  const addDocument = useDocumentStore((state) => state.addDocument);
+
   const [currentDocument, setCurrentDocument] = useState<Document | null>(null);
 
   const isResizingRef = useRef(false);
@@ -66,8 +71,6 @@ export const Navigation = () => {
 
   const fetchCurrentDocument = async () => {
     const rawId = params.documentId;
-
-    // 🔒 Safely ensure it's a string
     const documentId = Array.isArray(rawId) ? rawId[0] : rawId;
 
     if (!documentId) return;
@@ -80,8 +83,13 @@ export const Navigation = () => {
           id: documentId,
           title: data.title,
           parentDocumentId: data.parentDocumentId ?? null,
-          icon: data.icon ?? undefined, // optional
+          icon: data.icon ?? undefined,
         });
+
+        // Update Zustand store title in case it's edited elsewhere
+        updateTitle(documentId, data.title);
+      } else if (res.status === 404) {
+        router.push("/documents");
       } else {
         console.error("Error loading document title:", data.error);
       }
@@ -159,8 +167,8 @@ export const Navigation = () => {
       const data = await res.json();
 
       if (res.ok) {
+        addDocument(data); // ✅ ONLY this — it updates Zustand
         toast.success("New note created!");
-        setDocuments((prev) => [data, ...prev]);
         router.push(`/documents/${data.id}`);
       } else if (data.error === "Unauthorized") {
         alert("You must be logged in to create a document.");
@@ -203,9 +211,8 @@ export const Navigation = () => {
         </div>
 
         <div className="mt-4">
-          <DocumentList data={documents} />
+          <DocumentList />
           <Item onClick={handleCreate} icon={Plus} label="Add a page" />
-
           <Popover>
             <PopoverTrigger className="w-full mt-4">
               <Item label="Trash" icon={Trash} />

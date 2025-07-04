@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useDocumentStore } from "@/stores/use-document-store";
 import { PlusCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import toast from "react-hot-toast";
 const Documentspage = () => {
   const { data: session } = useSession();
   const router = useRouter();
+  const addDocument = useDocumentStore((state) => state.addDocument);
 
   const handleCreate = async () => {
     const res = await fetch("/api/documents/create", {
@@ -25,6 +27,7 @@ const Documentspage = () => {
     const data = await res.json();
 
     if (res.ok) {
+      addDocument(data);
       router.push(`/documents/${data.id}`);
       toast.promise(
         Promise.resolve(),
