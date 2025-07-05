@@ -37,7 +37,7 @@ const Documentspage = () => {
           error: "Failed to create document.",
         },
         {
-          position: "bottom-center",
+          position: "bottom-right",
           duration: 3000,
         }
       );

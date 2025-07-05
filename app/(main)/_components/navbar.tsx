@@ -3,12 +3,8 @@
 import { PanelLeft } from "lucide-react";
 import Title from "./title";
 import Banner from "./banner";
-
-interface Document {
-  id: string;
-  title: string;
-  isArchived?: boolean;
-}
+import Menu from "./menu";
+import type { Document } from "@/types/document";
 
 interface NavbarProps {
   isCollapsed: boolean;
@@ -33,7 +29,12 @@ export const NavBar = ({
         )}
         <div className="flex items-center justify-between w-full">
           {document ? (
-            <Title initialData={document.title} documentId={document.id} />
+            <div className="flex items-center justify-between w-full">
+              <Title initialData={document.title} documentId={document.id} />
+              <div className="flex items-center gap-x-2">
+                <Menu id={document.id} />
+              </div>
+            </div>
           ) : (
             <span className="text-sm text-muted-foreground">Loading...</span>
           )}

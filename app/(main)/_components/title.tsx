@@ -40,7 +40,18 @@ const Title = ({ initialData, documentId }: TitleProps) => {
 
       if (res.ok) {
         updateTitleGlobally(documentId, finalTitle); // ✅ Update global store
-        toast.success("Title updated successfully!");
+        toast.promise(
+          Promise.resolve(),
+          {
+            loading: "Update a new note...",
+            success: "Title updated successfully!",
+            error: "Failed to update document.",
+          },
+          {
+            position: "bottom-right",
+            duration: 3000,
+          }
+        );
         setTitle(finalTitle); // ✅ Update local state in case it was empty
       } else {
         const data = await res.json();

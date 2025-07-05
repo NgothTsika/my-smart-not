@@ -29,14 +29,7 @@ import { useSettings } from "@/hooks/use-settings";
 import { NavBar } from "./navbar";
 
 import { useDocumentStore } from "@/stores/use-document-store";
-
-interface Document {
-  id: string;
-  title: string;
-  icon?: string;
-  parentDocumentId: string | null;
-  isArchived?: boolean;
-}
+import type { Document } from "@/types/document";
 
 export const Navigation = () => {
   const search = useSearch();
@@ -169,7 +162,18 @@ export const Navigation = () => {
 
       if (res.ok) {
         addDocument(data);
-        toast.success("New note created!");
+        toast.promise(
+          Promise.resolve(),
+          {
+            loading: "Creating a new note...",
+            success: "New note created!",
+            error: "Failed to create document.",
+          },
+          {
+            position: "bottom-right",
+            duration: 3000,
+          }
+        );
         router.push(`/documents/${data.id}`);
       } else if (data.error === "Unauthorized") {
         alert("You must be logged in to create a document.");

@@ -9,11 +9,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { useDocumentStore } from "@/stores/use-document-store";
-
-interface Document {
-  id: string;
-  title: string;
-}
+import type { Document } from "@/types/document";
 
 const TrashBox = () => {
   const router = useRouter();

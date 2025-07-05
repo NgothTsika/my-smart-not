@@ -79,11 +79,18 @@ export const Item = ({
       }
     });
 
-    toast.promise(promise, {
-      loading: "Moving to trash...",
-      success: "Note moved to the trash!",
-      error: "Failed to archive note.",
-    });
+    toast.promise(
+      Promise.resolve(),
+      {
+        loading: "Moving to trash...",
+        success: "Note moved to the trash!",
+        error: "Failed to archive note.",
+      },
+      {
+        position: "bottom-right",
+        duration: 3000,
+      }
+    );
   };
 
   const onCreate = async (
@@ -104,11 +111,18 @@ export const Item = ({
       router.push(`/documents/${data.id}`);
     });
 
-    toast.promise(promise, {
-      loading: "Creating document...",
-      success: "Document created successfully!",
-      error: "Failed to create document.",
-    });
+    toast.promise(
+      Promise.resolve(),
+      {
+        loading: "Creating document...",
+        success: "Document created successfully!",
+        error: "Failed to create document.",
+      },
+      {
+        position: "bottom-right",
+        duration: 3000,
+      }
+    );
   };
 
   const ChevronIcon = expanded ? ChevronDown : ChevronRight;

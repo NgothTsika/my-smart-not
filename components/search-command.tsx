@@ -13,13 +13,7 @@ import { useSearch } from "@/hooks/use-search";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-
-interface Document {
-  id: string;
-  title: string;
-  icon?: string;
-  parentDocumentId?: string | null;
-}
+import type { Document } from "@/types/document";
 
 export const SearchCommand = () => {
   const router = useRouter();

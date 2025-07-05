@@ -12,6 +12,10 @@ interface BannerProps {
 const Banner = ({ documentId }: BannerProps) => {
   const router = useRouter();
 
+  const setCurrentDocument = useDocumentStore(
+    (state) => state.setCurrentDocument
+  );
+
   const restoreDocument = useDocumentStore((state) => state.restoreDocument);
 
   const handleRestore = async () => {
@@ -24,7 +28,18 @@ const Banner = ({ documentId }: BannerProps) => {
     if (res.ok) {
       restoreDocument(data);
       router.refresh();
-      toast.success("Document restored!");
+      toast.promise(
+        Promise.resolve(),
+        {
+          loading: "Creating a new note...",
+          success: "Document restored!",
+          error: "Failed to create document.",
+        },
+        {
+          position: "bottom-center",
+          duration: 3000,
+        }
+      );
     } else {
       toast.error(data.error || "Failed to restore.");
     }
