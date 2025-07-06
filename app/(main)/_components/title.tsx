@@ -52,7 +52,7 @@ const Title = ({ initialData, documentId }: TitleProps) => {
             duration: 3000,
           }
         );
-        setTitle(finalTitle); // ✅ Update local state in case it was empty
+        setTitle(finalTitle);
       } else {
         const data = await res.json();
         toast.error(data.error || "Failed to update title.");

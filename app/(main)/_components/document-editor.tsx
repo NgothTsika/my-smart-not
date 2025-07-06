@@ -13,7 +13,7 @@ const DocumentEditor = ({ content, onUpdate }: DocumentEditorProps) => {
     extensions: [StarterKit],
     content,
     onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML()); // send updated content back up
+      onUpdate(editor.getHTML());
     },
   });
 

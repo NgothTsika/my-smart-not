@@ -72,7 +72,7 @@ export const Item = ({
     }).then(async (res) => {
       if (!res.ok) throw new Error("Archive failed");
 
-      removeDocument(id); // ✅ Update Zustand
+      removeDocument(id);
 
       if (params.documentId === id) {
         router.push("/documents");
