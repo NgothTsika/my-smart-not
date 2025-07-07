@@ -5,15 +5,15 @@ import prisma from "@/lib/prismadb";
 
 export async function DELETE(
   req: Request,
-  context: { params: { documentId: string } }
+  context: { params: Promise<{ documentId: string }> } // ✅ updated
 ) {
+  const { documentId } = await context.params; // ✅ fixed
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { documentId } = context.params;
 
     const document = await prisma.document.findUnique({
       where: { id: documentId },
@@ -26,10 +26,12 @@ export async function DELETE(
       );
     }
 
+    // Delete all children first
     await prisma.document.deleteMany({
       where: { parentDocumentId: documentId },
     });
 
+    // Delete the document itself
     await prisma.document.delete({
       where: { id: documentId },
     });

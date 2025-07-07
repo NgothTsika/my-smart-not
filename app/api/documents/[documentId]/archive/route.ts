@@ -5,10 +5,9 @@ import prisma from "@/lib/prismadb";
 
 export async function PATCH(
   req: Request,
-  contextPromise: Promise<{ params: { documentId: string } }>
+  context: { params: Promise<{ documentId: string }> } // ✅ this is correct
 ) {
-  const { params } = await contextPromise;
-  const documentId = params.documentId;
+  const { documentId } = await context.params; // ✅ this is how you access it
 
   try {
     const session = await getServerSession(authOptions);
@@ -33,6 +32,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    // Archive all child documents recursively
     const archiveChildren = async (parentId: string) => {
       const children = await prisma.document.findMany({
         where: {

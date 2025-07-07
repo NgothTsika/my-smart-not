@@ -8,6 +8,7 @@ import { IconPicker } from "./icon-picker";
 import toast from "react-hot-toast";
 import { ElementRef, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
+import { useCoverImage } from "@/hooks/use-cover-image";
 
 interface ToolbarProps {
   initialData: {
@@ -28,6 +29,7 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
   const [history, setHistory] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
 
+  const coverImage = useCoverImage();
   const updateTitleGlobally = useDocumentStore((state) => state.updateTitle);
   const updateIconGlobally = useDocumentStore((state) => state.updateIcon);
 
@@ -116,7 +118,7 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
             </p>
           </IconPicker>
           <Button
-            onClick={() => updateIcon}
+            onClick={() => {}}
             variant="outline"
             size="icon"
             className="rounded-full opacity-0 group-hover/icon:opacity-100 transition text-muted-foreground text-xs"
@@ -145,6 +147,7 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
         )}
         {!initialData.coverImage && !preview && (
           <Button
+            onClick={coverImage.onOpen}
             className="text-muted-foreground text-xs"
             variant="outline"
             size="sm"

@@ -10,6 +10,7 @@ interface DocumentStore {
   restoreDocument: (doc: Document) => void;
   updateTitle: (id: string, title: string) => void;
   updateIcon: (id: string, icon: string) => void;
+  updateCoverImage: (id: string, url: string | null) => void;
   setCurrentDocument: (doc: Document) => void;
   updateCurrentArchived: (isArchived: boolean) => void;
 }
@@ -56,6 +57,17 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
       currentDocument:
         state.currentDocument?.id === id
           ? { ...state.currentDocument, icon }
+          : state.currentDocument,
+    })),
+
+  updateCoverImage: (id, url) =>
+    set((state) => ({
+      documents: state.documents.map((doc) =>
+        doc.id === id ? { ...doc, coverImage: url } : doc
+      ),
+      currentDocument:
+        state.currentDocument?.id === id
+          ? { ...state.currentDocument, coverImage: url }
           : state.currentDocument,
     })),
 

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import ToasterProvider from "@/components/providers/ToasterProvider";
 import AuthContext from "@/context/AuthContext";
 import { ModalProvider } from "@/components/providers/modal-provider";
+import { EdgeStoreProvider } from "../lib/edgestore";
 
 const poppinsRegular = localFont({
   src: "./fonts/Inter-VariableFont_opsz,wght.ttf",
@@ -28,12 +29,12 @@ export const metadata: Metadata = {
   description: "The connected workspace where better, faster work happens.",
   icons: [
     {
-      media: "(prefers-color-sheme: light)",
+      media: "(prefers-color-scheme: light)",
       url: "/logo-light.png",
       href: "/logo-light.png",
     },
     {
-      media: "(prefers-color-sheme: dark)",
+      media: "(prefers-color-scheme: dark)",
       url: "/logo-dark.png",
       href: "/logo-dark.png",
     },
@@ -50,18 +51,21 @@ export default function RootLayout({
       <body
         className={`${poppinsRegular.className} ${geistMono.variable} antialiased`}
       >
-        <AuthContext>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ToasterProvider />
-            <ModalProvider />
-            {children}
-          </ThemeProvider>
-        </AuthContext>
+        <EdgeStoreProvider>
+          <AuthContext>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <ToasterProvider />
+              <ModalProvider />
+
+              {children}
+            </ThemeProvider>
+          </AuthContext>
+        </EdgeStoreProvider>
       </body>
     </html>
   );

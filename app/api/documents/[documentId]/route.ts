@@ -5,44 +5,31 @@ import prisma from "@/lib/prismadb";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { documentId: string } }
+  context: { params: Promise<{ documentId: string }> }
 ) {
-  const { documentId } = context.params;
+  const { documentId } = await context.params;
 
   try {
     const document = await prisma.document.findUnique({
       where: { id: documentId },
-      select: {
-        id: true,
-        title: true,
-        parentDocumentId: true,
-        icon: true,
-        isArchived: true,
-      },
     });
 
     if (!document) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 }
-      );
+      return new NextResponse("Not found", { status: 404 });
     }
 
-    return NextResponse.json(document, { status: 200 });
+    return NextResponse.json(document);
   } catch (error) {
-    console.error("[GET_DOCUMENT_ERROR]", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("[DOCUMENT_GET]", error);
+    return new NextResponse("Internal Error", { status: 500 });
   }
 }
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { documentId: string } }
+  context: { params: Promise<{ documentId: string }> }
 ) {
-  const { documentId } = context.params;
+  const { documentId } = await context.params;
 
   try {
     const session = await getServerSession(authOptions);
@@ -74,16 +61,20 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { title, icon } = body;
+    const { title, icon, coverImage } = body;
 
     const updatedDocument = await prisma.document.update({
       where: { id: documentId },
-      data: { title, icon },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(icon !== undefined && { icon }),
+        ...(coverImage !== undefined && { coverImage }),
+      },
     });
 
     return NextResponse.json(updatedDocument, { status: 200 });
   } catch (error) {
-    console.error("[UPDATE_DOCUMENT_ERROR]", error);
+    console.error("[DOCUMENT_PATCH]", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

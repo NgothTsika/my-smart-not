@@ -1,20 +1,18 @@
 "use client";
 
-import { use } from "react";
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { useDocumentStore } from "@/stores/use-document-store";
 import { Spinner } from "@/components/spinner";
 import Toolbar from "@/app/(main)/_components/toolbar";
 import toast from "react-hot-toast";
+import { Cover } from "@/components/cover";
+import type { Document } from "@/types/document";
+import { safeImageUrl } from "@/lib/safe-image-url";
 
-interface DocumentIdPageProps {
-  params: Promise<{
-    documentId: string;
-  }>;
-}
-
-const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const { documentId } = use(params); // ✅ unwrap async params
+const DocumentIdPage = () => {
+  const params = useParams();
+  const documentId = params?.documentId as string;
 
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
@@ -22,12 +20,14 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const setCurrentDocument = useDocumentStore(
     (state) => state.setCurrentDocument
   );
-  const currentDocument = useDocumentStore((state) => state.currentDocument);
+  const currentDoc = useDocumentStore((state) =>
+    state.documents.find((d) => d.id === documentId)
+  );
 
   const fetchDocument = async () => {
     try {
       const res = await fetch(`/api/documents/${documentId}`);
-      const data = await res.json();
+      const data: Document = await res.json();
 
       if (res.ok) {
         setCurrentDocument(data);
@@ -44,14 +44,14 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   };
 
   useEffect(() => {
-    fetchDocument();
+    if (documentId) fetchDocument();
   }, [documentId]);
 
   useEffect(() => {
-    if (currentDocument?.content) {
-      setContent(currentDocument.content);
+    if (currentDoc?.content) {
+      setContent(currentDoc.content);
     }
-  }, [currentDocument]);
+  }, [currentDoc]);
 
   if (loading) {
     return (
@@ -61,7 +61,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     );
   }
 
-  if (!currentDocument) {
+  if (!currentDoc) {
     return (
       <div className="h-full w-full flex items-center justify-center text-muted-foreground">
         Document not found.
@@ -70,9 +70,15 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   }
 
   return (
-    <div className="pt-20">
+    <div className="pb-40">
+      <Cover url={safeImageUrl(currentDoc.coverImage)} />
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
-        <Toolbar initialData={currentDocument} />
+        <Toolbar
+          initialData={{
+            ...currentDoc,
+            coverImage: safeImageUrl(currentDoc.coverImage),
+          }}
+        />
       </div>
     </div>
   );
