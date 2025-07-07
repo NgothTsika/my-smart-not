@@ -26,10 +26,10 @@ import {
 import TrashBox from "./trash-box";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
-import { NavBar } from "./navbar";
 
 import { useDocumentStore } from "@/stores/use-document-store";
 import type { Document } from "@/types/document";
+import { NavBar } from "./navbar";
 
 export const Navigation = () => {
   const search = useSearch();

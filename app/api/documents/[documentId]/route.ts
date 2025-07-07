@@ -74,11 +74,11 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { title } = body;
+    const { title, icon } = body;
 
     const updatedDocument = await prisma.document.update({
       where: { id: documentId },
-      data: { title },
+      data: { title, icon },
     });
 
     return NextResponse.json(updatedDocument, { status: 200 });

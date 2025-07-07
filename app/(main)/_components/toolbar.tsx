@@ -1,12 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useDocumentStore } from "@/stores/use-document-store";
 import { Button } from "@/components/ui/button";
 import { ImageIcon, Smile, X } from "lucide-react";
 import { IconPicker } from "./icon-picker";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ElementRef, useRef, useState } from "react";
-import { title } from "process";
 import TextareaAutosize from "react-textarea-autosize";
 
 interface ToolbarProps {
@@ -22,15 +22,19 @@ interface ToolbarProps {
 const Toolbar = ({ initialData, preview }: ToolbarProps) => {
   const router = useRouter();
   const inputRef = useRef<ElementRef<"textarea">>(null);
+
   const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(initialData.title);
+  const [value, setValue] = useState(initialData.title || "");
+  const [history, setHistory] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
+
+  const updateTitleGlobally = useDocumentStore((state) => state.updateTitle);
+  const updateIconGlobally = useDocumentStore((state) => state.updateIcon);
 
   const enableInput = () => {
     if (preview) return;
-
     setIsEditing(true);
     setTimeout(() => {
-      setValue(initialData.title);
       inputRef.current?.focus();
     }, 0);
   };
@@ -46,18 +50,53 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
       });
 
       if (!res.ok) throw new Error();
-      router.refresh();
+
+      updateTitleGlobally(data.id, data.title);
     } catch (err) {
       toast.error("Failed to update title");
     }
   };
 
+  const updateIcon = async (icon: string) => {
+    try {
+      const res = await fetch(`/api/documents/${initialData.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ icon }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      updateIconGlobally(initialData.id, icon); // ✅ Update Zustand
+      router.refresh(); // Optional
+    } catch (err) {
+      toast.error("Failed to update icon");
+    }
+  };
+
   const onInput = (value: string) => {
+    setHistory((prev) => [...prev, value]);
+    setRedoStack([]);
     setValue(value);
-    update({
-      id: initialData.id,
-      title: value || "Untitled",
-    });
+    update({ id: initialData.id, title: value || "Untitled" });
+  };
+
+  const handleUndo = () => {
+    if (history.length < 2) return;
+    const last = history[history.length - 2];
+    setRedoStack((prev) => [value || "", ...prev]);
+    setHistory((prev) => prev.slice(0, -1));
+    setValue(last);
+    update({ id: initialData.id, title: last });
+  };
+
+  const handleRedo = () => {
+    if (!redoStack.length) return;
+    const [next, ...rest] = redoStack;
+    setHistory((prev) => [...prev, next]);
+    setRedoStack(rest);
+    setValue(next || "");
+    update({ id: initialData.id, title: next || "Untitled" });
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -67,35 +106,20 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
     }
   };
 
-  const updateIcon = async (icon: string | null) => {
-    try {
-      const res = await fetch(`/api/documents/${initialData.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ icon }),
-      });
-
-      if (!res.ok) throw new Error();
-      router.refresh();
-    } catch (err) {
-      toast.error("Failed to update");
-    }
-  };
-
   return (
-    <div className="pl-[54px] group relative ">
+    <div className="pl-[54px] group relative">
       {!!initialData.icon && !preview && (
         <div className="flex items-center gap-x-2 group/icon pt-6">
           <IconPicker onChange={(emoji) => updateIcon(emoji)}>
-            <p className="text-6xl hover:opacity-75 transition">
+            <p className="text-6xl hover:opacity-75 transition cursor-pointer">
               {initialData.icon}
             </p>
           </IconPicker>
           <Button
-            onClick={() => updateIcon(null)}
+            onClick={() => updateIcon}
             variant="outline"
             size="icon"
-            className=" rounded-full opacity-0 group-hover/icon:opacity-100 transition text-muted-foreground text-xs"
+            className="rounded-full opacity-0 group-hover/icon:opacity-100 transition text-muted-foreground text-xs"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -121,7 +145,7 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
         )}
         {!initialData.coverImage && !preview && (
           <Button
-            className=" text-muted-foreground text-xs"
+            className="text-muted-foreground text-xs"
             variant="outline"
             size="sm"
           >
@@ -130,6 +154,7 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
           </Button>
         )}
       </div>
+
       {isEditing && !preview ? (
         <TextareaAutosize
           ref={inputRef}
@@ -137,14 +162,14 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
           onKeyDown={onKeyDown}
           value={value}
           onChange={(e) => onInput(e.target.value)}
-          className=" text-5xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none "
+          className="text-5xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none"
         />
       ) : (
         <div
           className="pb-[11.5px] text-5xl font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] cursor-text"
           onClick={enableInput}
         >
-          {initialData.title}
+          {value || "Untitled"}
         </div>
       )}
     </div>

@@ -5,6 +5,8 @@ import Title from "./title";
 import Banner from "./banner";
 import Menu from "./menu";
 import type { Document } from "@/types/document";
+import { useParams } from "next/navigation";
+import { useDocumentStore } from "@/stores/use-document-store";
 
 interface NavbarProps {
   isCollapsed: boolean;
@@ -17,6 +19,11 @@ export const NavBar = ({
   onResetWidth,
   document,
 }: NavbarProps) => {
+  const params = useParams();
+
+  const currentDoc = useDocumentStore((state) =>
+    state.documents.find((d) => d.id === params.documentId)
+  );
   return (
     <>
       <nav className="bg-background dark:bg-[#1F1F1F] px-3 py-2 w-full flex items-center gap-x-4">
@@ -28,9 +35,12 @@ export const NavBar = ({
           />
         )}
         <div className="flex items-center justify-between w-full">
+          {currentDoc?.icon && (
+            <span className="text-xl px-2">{currentDoc.icon}</span>
+          )}
           {document ? (
             <div className="flex items-center justify-between w-full">
-              <Title initialData={document.title} documentId={document.id} />
+              <Title documentId={document.id} />
               <div className="flex items-center gap-x-2">
                 <Menu id={document.id} />
               </div>

@@ -6,107 +6,72 @@ import toast from "react-hot-toast";
 import { useDocumentStore } from "@/stores/use-document-store";
 
 interface TitleProps {
-  initialData: string;
   documentId: string;
 }
 
-const Title = ({ initialData, documentId }: TitleProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState(initialData);
+const Title = ({ documentId }: { documentId: string }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const updateTitleGlobally = useDocumentStore((state) => state.updateTitle);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const title = useDocumentStore(
+    (state) => state.documents.find((doc) => doc.id === documentId)?.title
+  );
+  const updateTitle = useDocumentStore((state) => state.updateTitle);
+
+  const [localTitle, setLocalTitle] = useState(title || "");
 
   useEffect(() => {
-    setTitle(initialData);
-  }, [initialData]);
-
-  useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-      inputRef.current?.setSelectionRange(0, inputRef.current.value.length);
-    }
-  }, [isEditing]);
+    setLocalTitle(title || "");
+  }, [title]);
 
   const handleSubmit = async () => {
     setIsEditing(false);
-    const finalTitle = title.trim() || "Untitled"; // ✅ Default here
-
     try {
       const res = await fetch(`/api/documents/${documentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: finalTitle }),
+        body: JSON.stringify({ title: localTitle }),
       });
 
       if (res.ok) {
-        updateTitleGlobally(documentId, finalTitle); // ✅ Update global store
-        toast.promise(
-          Promise.resolve(),
-          {
-            loading: "Update a new note...",
-            success: "Title updated successfully!",
-            error: "Failed to update document.",
-          },
-          {
-            position: "bottom-right",
-            duration: 3000,
-          }
-        );
-        setTitle(finalTitle);
+        updateTitle(documentId, localTitle);
+        toast.success("Title updated!");
       } else {
         const data = await res.json();
-        toast.error(data.error || "Failed to update title.");
+        toast.error(data.error || "Failed to update.");
       }
-    } catch (error) {
-      toast.error("Failed to update title.");
-      console.error("Error updating title:", error);
+    } catch {
+      toast.error("Something went wrong.");
     }
   };
 
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      await handleSubmit();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      setTitle(initialData);
-      setIsEditing(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value || "Untitled");
-  };
-
-  const enableInput = () => {
-    setIsEditing(true);
-    setTimeout(() => {
-      inputRef.current?.focus();
-      inputRef.current?.setSelectionRange(0, inputRef.current.value.length);
-    }, 0);
-  };
-
-  return (
-    <div className="flex items-center gap-x-2">
-      {isEditing ? (
-        <Input
-          ref={inputRef}
-          value={title}
-          onChange={handleChange}
-          onBlur={handleSubmit}
-          onKeyDown={handleKeyDown}
-          className="text-sm font-medium"
-        />
-      ) : (
-        <span
-          role="button"
-          onClick={enableInput}
-          className="text-sm font-medium cursor-pointer"
-        >
-          {title || "Untitled"}
-        </span>
-      )}
-    </div>
+  return isEditing ? (
+    <Input
+      ref={inputRef}
+      value={localTitle}
+      onChange={(e) => setLocalTitle(e.target.value)}
+      onBlur={handleSubmit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") handleSubmit();
+        if (e.key === "Escape") {
+          setLocalTitle(title || "");
+          setIsEditing(false);
+        }
+      }}
+    />
+  ) : (
+    <span
+      role="button"
+      className="text-sm font-medium cursor-pointer"
+      onClick={() => {
+        setIsEditing(true);
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 0);
+      }}
+    >
+      {localTitle || "Untitled"}
+    </span>
   );
 };
 

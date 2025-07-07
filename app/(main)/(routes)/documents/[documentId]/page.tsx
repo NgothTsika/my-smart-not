@@ -14,7 +14,7 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const { documentId } = use(params);
+  const { documentId } = use(params); // ✅ unwrap async params
 
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
@@ -70,7 +70,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   }
 
   return (
-    <div className="w-full h-full items-center justify-center flex">
+    <div className="pt-20">
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
         <Toolbar initialData={currentDocument} />
       </div>
