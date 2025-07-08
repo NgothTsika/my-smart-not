@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { Cover } from "@/components/cover";
 import type { Document } from "@/types/document";
 import { safeImageUrl } from "@/lib/safe-image-url";
+import { Editor } from "@/components/editor";
 
 const DocumentIdPage = () => {
   const params = useParams();
@@ -79,6 +80,7 @@ const DocumentIdPage = () => {
             coverImage: safeImageUrl(currentDoc.coverImage),
           }}
         />
+        <Editor onChange={() => {}} initialContent={currentDoc.content} />
       </div>
     </div>
   );
