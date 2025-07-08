@@ -61,7 +61,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { title, icon, coverImage } = body;
+    const { title, icon, coverImage, content } = body;
 
     const updatedDocument = await prisma.document.update({
       where: { id: documentId },
@@ -69,6 +69,7 @@ export async function PATCH(
         ...(title !== undefined && { title }),
         ...(icon !== undefined && { icon }),
         ...(coverImage !== undefined && { coverImage }),
+        ...(content !== undefined && { content }),
       },
     });
 

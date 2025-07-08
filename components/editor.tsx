@@ -11,6 +11,8 @@ import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
 
+import { useEdgeStore } from "@/lib/edgestore";
+
 interface EditorProps {
   onChange: (value: string) => void;
   initialContent?: string;

@@ -65,7 +65,7 @@ model Document {
   parentDocumentId String?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-  content          String?
+  content          String?    @db.LongText
   coverImage       String?
   icon             String?
   isPublished      Boolean

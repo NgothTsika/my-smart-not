@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useDocumentStore } from "@/stores/use-document-store";
 import { Spinner } from "@/components/spinner";
@@ -10,6 +10,7 @@ import { Cover } from "@/components/cover";
 import type { Document } from "@/types/document";
 import { safeImageUrl } from "@/lib/safe-image-url";
 import { Editor } from "@/components/editor";
+import { debounce } from "lodash";
 
 const DocumentIdPage = () => {
   const params = useParams();
@@ -21,10 +22,12 @@ const DocumentIdPage = () => {
   const setCurrentDocument = useDocumentStore(
     (state) => state.setCurrentDocument
   );
+
   const currentDoc = useDocumentStore((state) =>
     state.documents.find((d) => d.id === documentId)
   );
 
+  // Fetch document
   const fetchDocument = async () => {
     try {
       const res = await fetch(`/api/documents/${documentId}`);
@@ -54,6 +57,40 @@ const DocumentIdPage = () => {
     }
   }, [currentDoc]);
 
+  const debouncedSave = useRef(
+    debounce(async (newContent: string) => {
+      try {
+        const res = await fetch(`/api/documents/${documentId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: newContent }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          toast.error(data.error || "Failed to update content");
+          return;
+        }
+
+        useDocumentStore.getState().setCurrentDocument({
+          ...currentDoc!,
+          content: newContent,
+        });
+      } catch (err) {
+        toast.error("Auto-save failed.");
+        console.error(err);
+      }
+    }, 1000)
+  ).current;
+
+  const onChange = useCallback(
+    (value: string) => {
+      setContent(value);
+      debouncedSave(value);
+    },
+    [debouncedSave]
+  );
+
   if (loading) {
     return (
       <div className="h-full w-full flex items-center justify-center">
@@ -80,7 +117,7 @@ const DocumentIdPage = () => {
             coverImage: safeImageUrl(currentDoc.coverImage),
           }}
         />
-        <Editor onChange={() => {}} initialContent={currentDoc.content} />
+        <Editor onChange={onChange} initialContent={content} />
       </div>
     </div>
   );
