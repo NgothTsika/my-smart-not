@@ -25,7 +25,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartNot",
+  title: "NOTEFLOW.",
   description: "The connected workspace where better, faster work happens.",
   icons: [
     {

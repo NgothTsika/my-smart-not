@@ -36,8 +36,10 @@ export const CoverImageModal = () => {
       setIsSubmitting(true);
       setFile(file);
 
-      // Upload file to EdgeStore
-      const res = await edgestore.publicFiles.upload({ file });
+      const res = await edgestore.publicFiles.upload({
+        file,
+        options: { replaceTargetUrl: coverImage.url },
+      });
 
       // Update coverImage in DB
       const response = await fetch(`/api/documents/${params.documentId}`, {
@@ -73,30 +75,39 @@ export const CoverImageModal = () => {
         <UploaderProvider
           autoUpload
           uploadFn={async ({ file }) => {
-            const res = await edgestore.publicFiles.upload({ file });
+            const res = await edgestore.publicFiles.upload({
+              file,
+              options: { replaceTargetUrl: coverImage.url },
+            });
             return { url: res.url };
           }}
+          onUploadCompleted={async (file) => {
+            const response = await fetch(
+              `/api/documents/${params.documentId}`,
+              {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ coverImage: file.url }),
+              }
+            );
+
+            if (!response.ok) {
+              toast.error("Failed to update cover");
+              return;
+            }
+
+            updateCoverImage(params.documentId as string, file.url);
+            toast.success("Cover image updated!");
+            router.refresh();
+            coverImage.onClose();
+          }}
         >
-          <div className="space-y-4">
-            {success ? (
-              <div className="flex flex-col items-center justify-center text-green-600">
-                <CheckCircle2 className="w-12 h-12" />
-                <p className="text-sm font-medium mt-2">Cover image updated!</p>
-              </div>
-            ) : (
-              <>
-                <SingleImageDropzone
-                  className="w-full outline-none"
-                  disabled={isSubmitting}
-                  value={file}
-                  onChange={onChange} // ✅ Custom file change handler
-                />
-                <p className="text-sm text-muted-foreground text-center">
-                  Recommended: 16:9 aspect ratio
-                </p>
-              </>
-            )}
-          </div>
+          <SingleImageDropzone
+            className="w-full outline-none"
+            disabled={isSubmitting}
+            value={file}
+            onChange={setFile} // ← just update local state
+          />
         </UploaderProvider>
       </DialogContent>
     </Dialog>

@@ -13,8 +13,8 @@ import { useCoverImage } from "@/hooks/use-cover-image";
 interface ToolbarProps {
   initialData: {
     id: string;
-    icon?: string;
-    coverImage?: string;
+    icon?: string | null;
+    coverImage?: string | null;
     title?: string;
   };
   preview?: boolean;
@@ -76,6 +76,23 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
     }
   };
 
+  const removeIcon = async () => {
+    try {
+      const res = await fetch(`/api/documents/${initialData.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ icon: null }),
+      });
+
+      if (!res.ok) throw new Error();
+      updateIconGlobally(initialData.id, null);
+      toast.success("Icon removed");
+      router.refresh();
+    } catch (err) {
+      toast.error("Failed to remove icon");
+    }
+  };
+
   const onInput = (value: string) => {
     setHistory((prev) => [...prev, value]);
     setRedoStack([]);
@@ -118,7 +135,7 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
             </p>
           </IconPicker>
           <Button
-            onClick={() => {}}
+            onClick={removeIcon}
             variant="outline"
             size="icon"
             className="rounded-full opacity-0 group-hover/icon:opacity-100 transition text-muted-foreground text-xs"
