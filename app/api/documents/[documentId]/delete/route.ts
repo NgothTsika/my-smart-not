@@ -1,45 +1,22 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import prisma from "@/lib/prismadb";
-import { authOptions } from "@/lib/auth";
 
 export async function DELETE(
   req: Request,
-  context: { params: Promise<{ documentId: string }> }
+  { params }: { params: { documentId: string } }
 ) {
-  const { documentId } = await context.params;
-
+  const { documentId } = params;
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const document = await prisma.document.findUnique({
-      where: { id: documentId },
-    });
-
-    if (!document) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 }
-      );
-    }
-
-    await prisma.document.deleteMany({
-      where: { parentDocumentId: documentId },
-    });
-
-    await prisma.document.delete({
-      where: { id: documentId },
-    });
-
-    return NextResponse.json({ message: "Document deleted" }, { status: 200 });
+    const deleteRecursive = async (id: string) => {
+      const children = await prisma.document.findMany({
+        where: { parentDocumentId: id },
+      });
+      for (const child of children) await deleteRecursive(child.id);
+      await prisma.document.delete({ where: { id } });
+    };
+    await deleteRecursive(documentId);
+    return NextResponse.json({ message: "Document deleted" });
   } catch (error) {
-    console.error("[DOCUMENT_DELETE_ERROR]", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return new NextResponse("Internal error", { status: 500 });
   }
 }
