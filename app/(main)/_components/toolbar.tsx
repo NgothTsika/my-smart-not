@@ -69,8 +69,8 @@ const Toolbar = ({ initialData, preview }: ToolbarProps) => {
 
       if (!res.ok) throw new Error();
 
-      updateIconGlobally(initialData.id, icon); // ✅ Update Zustand
-      router.refresh(); // Optional
+      updateIconGlobally(initialData.id, icon); 
+      router.refresh(); 
     } catch (err) {
       toast.error("Failed to update icon");
     }

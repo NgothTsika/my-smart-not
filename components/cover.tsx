@@ -31,24 +31,24 @@ export const Cover = ({
   const removeCoverImage = async () => {
     try {
       if (url) {
-        await edgestore.publicFiles.delete({ url }); // ✅ Delete from EdgeStore if it exists
+        await edgestore.publicFiles.delete({ url });
       }
 
       const res = await fetch(`/api/documents/${documentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coverImage: null }), // ✅ Remove it in the database
+        body: JSON.stringify({ coverImage: null }),
       });
 
-      if (!res.ok) throw new Error(); // ✅ Handle errors from the server
+      if (!res.ok) throw new Error();
 
-      useDocumentStore.getState().updateCoverImage(documentId, null); // ✅ Sync Zustand
+      useDocumentStore.getState().updateCoverImage(documentId, null);
 
-      toast.success("Cover image removed"); // ✅ User feedback
-      router.refresh(); // ✅ UI refresh
+      toast.success("Cover image removed");
+      router.refresh();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to remove cover image"); // ✅ Error feedback
+      toast.error("Failed to remove cover image"); 
     }
   };
 

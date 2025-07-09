@@ -28,7 +28,6 @@ const DocumentIdPage = () => {
     state.documents.find((d) => d.id === documentId)
   );
 
-  // Fetch document
   useEffect(() => {
     let isMounted = true;
 
@@ -65,7 +64,6 @@ const DocumentIdPage = () => {
     };
   }, [documentId, router, setCurrentDocument]);
 
-  // Auto-save
   const debouncedSave = useRef(
     debounce(async (newContent: string) => {
       try {
@@ -106,7 +104,7 @@ const DocumentIdPage = () => {
   }
 
   if (!currentDoc) {
-    return null; // nothing to show, already redirected if error
+    return null;
   }
 
   return (

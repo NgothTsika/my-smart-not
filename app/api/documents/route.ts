@@ -38,7 +38,6 @@ export async function GET(req: Request) {
       where: {
         userId: user.id,
         isArchived: false,
-        // parentDocumentId: parsed.data.parentDocument ?? null,
       },
       orderBy: {
         createdAt: "desc",

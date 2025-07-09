@@ -41,7 +41,6 @@ export const CoverImageModal = () => {
         options: { replaceTargetUrl: coverImage.url },
       });
 
-      // Update coverImage in DB
       const response = await fetch(`/api/documents/${params.documentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -50,7 +49,6 @@ export const CoverImageModal = () => {
 
       if (!response.ok) throw new Error();
 
-      // Update Zustand store
       updateCoverImage(params.documentId as string, res.url);
 
       setSuccess(true);
@@ -106,7 +104,7 @@ export const CoverImageModal = () => {
             className="w-full outline-none"
             disabled={isSubmitting}
             value={file}
-            onChange={setFile} // ← just update local state
+            onChange={setFile}
           />
         </UploaderProvider>
       </DialogContent>

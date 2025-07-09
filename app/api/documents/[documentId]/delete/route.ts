@@ -5,9 +5,9 @@ import prisma from "@/lib/prismadb";
 
 export async function DELETE(
   req: Request,
-  context: { params: Promise<{ documentId: string }> } // ✅ updated
+  context: { params: Promise<{ documentId: string }> }
 ) {
-  const { documentId } = await context.params; // ✅ fixed
+  const { documentId } = await context.params;
 
   try {
     const session = await getServerSession(authOptions);
@@ -26,12 +26,10 @@ export async function DELETE(
       );
     }
 
-    // Delete all children first
     await prisma.document.deleteMany({
       where: { parentDocumentId: documentId },
     });
 
-    // Delete the document itself
     await prisma.document.delete({
       where: { id: documentId },
     });

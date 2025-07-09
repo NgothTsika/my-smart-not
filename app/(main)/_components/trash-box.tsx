@@ -40,8 +40,8 @@ const TrashBox = () => {
 
       const data = await res.json();
 
-      restoreDocument(data); // ✅ Updates Zustand (re-renders sidebar)
-      setDocuments((prev) => prev?.filter((doc) => doc.id !== id)); // ✅ Clean trash view
+      restoreDocument(data);
+      setDocuments((prev) => prev?.filter((doc) => doc.id !== id));
     });
 
     toast.promise(promise, {

@@ -13,21 +13,21 @@ import { Spinner } from "@/components/spinner";
 import Link from "next/link";
 
 const Navbar = () => {
-  const { data: session, status } = useSession(); // Use NextAuth's useSession hook
+  const { data: session, status } = useSession();
   const scroll = useScrollTop();
   const router = useRouter();
-  const [showCard, setShowCard] = useState(false); // State to toggle the card visibility
+  const [showCard, setShowCard] = useState(false);
 
   const handleLoginClick = () => {
-    router.push("/auth"); // Redirect to the AuthForm page
+    router.push("/auth");
   };
 
   const handleAvatarClick = () => {
-    setShowCard((prev) => !prev); // Toggle the card visibility
+    setShowCard((prev) => !prev);
   };
 
   const handleLogout = () => {
-    signOut(); // Log out the user
+    signOut();
   };
 
   return (

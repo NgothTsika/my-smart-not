@@ -18,8 +18,7 @@ export function SingleImageDropzoneUsage() {
         signal,
         onProgressChange,
       });
-      // you can run some server action or api here
-      // to add the necessary data to your database
+
       console.log(res);
       return res;
     },
@@ -32,7 +31,7 @@ export function SingleImageDropzoneUsage() {
         height={200}
         width={200}
         dropzoneOptions={{
-          maxSize: 1024 * 1024 * 1, // 1 MB
+          maxSize: 1024 * 1024 * 1,
         }}
       />
     </UploaderProvider>

@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, user }, { status: 201 }); // ✅ Correct response
+    return NextResponse.json({ success: true, user }, { status: 201 });
   } catch (error: any) {
     console.error("REGISTRATION ERROR:", error);
 

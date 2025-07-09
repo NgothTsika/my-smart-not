@@ -7,7 +7,7 @@ interface AvatarProps {
 }
 
 const Avatar: React.FC<AvatarProps> = ({ src }) => {
-  const fallbackImage = "/images/avatar.png"; // Default fallback image
+  const fallbackImage = "/images/avatar.png";
   const isValidSrc = src?.startsWith("http") || src?.startsWith("/");
 
   return (
@@ -16,7 +16,7 @@ const Avatar: React.FC<AvatarProps> = ({ src }) => {
       className="rounded-full border border-yellow-400 dark:border-yellow-500"
       height={30}
       width={30}
-      src={isValidSrc ? src! : fallbackImage} // Use fallback if src is invalid
+      src={isValidSrc ? src! : fallbackImage}
     />
   );
 };

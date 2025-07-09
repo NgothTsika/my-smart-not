@@ -17,8 +17,8 @@ export const UserItem = () => {
   const { data: session } = useSession();
 
   const handleLogout = async () => {
-    await signOut(); // Log out the user
-    redirect("/"); // Redirect to the main page
+    await signOut();
+    redirect("/");
   };
 
   return (

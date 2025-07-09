@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Correct import for Next.js 13+ app directory
+import { useRouter } from "next/navigation";
 
 const Heading = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   const handleLoginClick = () => {
-    router.push("/auth"); // Redirect to the AuthForm page
+    router.push("/auth");
   };
 
   return (

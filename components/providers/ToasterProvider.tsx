@@ -5,9 +5,9 @@ import { Toaster } from "react-hot-toast";
 const ToasterProvider = () => {
   return (
     <Toaster
-      position="bottom-right" // 👈 Set global position here
+      position="bottom-right"
       toastOptions={{
-        duration: 3000, // default duration for all toasts
+        duration: 3000,
       }}
     />
   );

@@ -7,7 +7,7 @@ export async function PATCH(
   req: NextRequest,
   context: { params: { documentId: string } }
 ) {
-  const { documentId } = context.params; // ✅ FIXED
+  const { documentId } = context.params;
 
   try {
     const session = await getServerSession(authOptions);
@@ -38,7 +38,7 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(updatedDocument, { status: 200 }); // ✅ Make sure you return full document
+    return NextResponse.json(updatedDocument, { status: 200 });
   } catch (error) {
     console.error("[RESTORE_DOCUMENT_ERROR]", error);
     return NextResponse.json(

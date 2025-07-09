@@ -3,12 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prismadb";
 
-// GET a document by ID
 export async function GET(
   req: NextRequest,
-  context: { params: { documentId: string } }
+  contextPromise: Promise<{ params: { documentId: string } }>
 ) {
-  const { documentId } = context.params;
+  const { params } = await contextPromise;
+  const { documentId } = params;
 
   try {
     const document = await prisma.document.findUnique({
@@ -28,9 +28,10 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { documentId: string } }
+  contextPromise: Promise<{ params: { documentId: string } }>
 ) {
-  const { documentId } = context.params;
+  const { params } = await contextPromise;
+  const { documentId } = params;
 
   try {
     const session = await getServerSession(authOptions);

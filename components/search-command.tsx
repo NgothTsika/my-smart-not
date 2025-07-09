@@ -60,7 +60,7 @@ export const SearchCommand = () => {
       }
     };
 
-    const timeout = setTimeout(fetchResults, 300); // Debounce
+    const timeout = setTimeout(fetchResults, 300);
     return () => clearTimeout(timeout);
   }, [query]);
 

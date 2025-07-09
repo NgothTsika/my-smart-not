@@ -16,7 +16,7 @@ import { X } from "lucide-react";
 type Variant = "LOGIN" | "REGISTER";
 
 interface AuthFormProps {
-  onClose: () => void; // Add the onClose prop
+  onClose: () => void;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ onClose }) => {
