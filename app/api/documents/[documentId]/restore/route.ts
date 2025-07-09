@@ -5,15 +5,16 @@ import { authOptions } from "@/lib/auth";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Record<string, string> }
+  contextPromise: Promise<{ params: { documentId: string } }>
 ) {
+  const { params } = await contextPromise;
   const { documentId } = params;
 
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -24,7 +25,7 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const document = await prisma.document.update({
+    const updated = await prisma.document.update({
       where: {
         id: documentId,
         userId: user.id,
@@ -34,12 +35,9 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(document);
-  } catch (err) {
-    console.error("[DOCUMENT_RESTORE]", err);
-    return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("[RESTORE_DOCUMENT]", error);
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }
