@@ -3,9 +3,9 @@ import prisma from "@/lib/prismadb";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { documentId: string } }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = params;
+  const { documentId } = context.params;
   try {
     const deleteRecursive = async (id: string) => {
       const children = await prisma.document.findMany({

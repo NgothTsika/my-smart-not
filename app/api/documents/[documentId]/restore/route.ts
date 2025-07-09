@@ -3,9 +3,9 @@ import prisma from "@/lib/prismadb";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { documentId: string } }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = params;
+  const { documentId } = context.params;
   try {
     const restored = await prisma.document.update({
       where: { id: documentId },

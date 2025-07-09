@@ -5,9 +5,9 @@ import { authOptions } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { documentId: string } }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = params;
+  const { documentId } = context.params;
   try {
     const document = await prisma.document.findUnique({
       where: { id: documentId },
@@ -21,9 +21,9 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { documentId: string } }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = params;
+  const { documentId } = context.params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.email)
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
