@@ -24,22 +24,13 @@ const Toolbar = ({ preview }: ToolbarProps) => {
   const updateTitleGlobally = useDocumentStore((state) => state.updateTitle);
   const updateIconGlobally = useDocumentStore((state) => state.updateIcon);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(currentDocument?.title || "");
+  const [value, setValue] = useState("");
 
   useEffect(() => {
     setValue(currentDocument?.title || "");
   }, [currentDocument?.title]);
 
-  const enableInput = () => {
-    if (preview) return;
-    setIsEditing(true);
-    setTimeout(() => inputRef.current?.focus(), 0);
-  };
-
-  const disableInput = () => setIsEditing(false);
-
-  const update = async (title: string) => {
+  const updateTitle = async (title: string) => {
     if (!currentDocument) return;
     try {
       const res = await fetch("/api/documents", {
@@ -53,7 +44,9 @@ const Toolbar = ({ preview }: ToolbarProps) => {
           },
         }),
       });
+
       if (!res.ok) throw new Error();
+
       updateTitleGlobally(currentDocument.id, title);
     } catch (err) {
       toast.error("Failed to update title");
@@ -76,6 +69,7 @@ const Toolbar = ({ preview }: ToolbarProps) => {
       });
 
       if (!res.ok) throw new Error();
+
       updateIconGlobally(currentDocument.id, icon);
       router.refresh();
     } catch (err) {
@@ -83,22 +77,16 @@ const Toolbar = ({ preview }: ToolbarProps) => {
     }
   };
 
-  const onInput = (value: string) => {
+  const handleTitleChange = (value: string) => {
     setValue(value);
-    update(value || "Untitled");
-  };
-
-  const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      disableInput();
-    }
+    updateTitle(value || "Untitled");
   };
 
   if (!currentDocument) return null;
 
   return (
     <div className="pl-[54px] group relative">
+      {/* Icon display */}
       {!!currentDocument.icon && !preview && (
         <div className="flex items-center gap-x-2 group/icon pt-6">
           <IconPicker onChange={(emoji) => updateIcon(emoji)}>
@@ -108,7 +96,7 @@ const Toolbar = ({ preview }: ToolbarProps) => {
           </IconPicker>
           <Button
             onClick={() => updateIcon(null)}
-            variant="outline"
+            variant="ghost"
             size="icon"
             className="rounded-full opacity-0 group-hover/icon:opacity-100 transition text-muted-foreground text-xs"
           >
@@ -121,6 +109,7 @@ const Toolbar = ({ preview }: ToolbarProps) => {
         <p className="text-6xl pt-6">{currentDocument.icon}</p>
       )}
 
+      {/* Icon & Cover buttons */}
       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-x-1 py-4">
         {!currentDocument.icon && !preview && (
           <IconPicker onChange={(emoji) => updateIcon(emoji)} asChild>
@@ -147,23 +136,17 @@ const Toolbar = ({ preview }: ToolbarProps) => {
         )}
       </div>
 
-      {isEditing && !preview ? (
-        <TextareaAutosize
-          ref={inputRef}
-          onBlur={disableInput}
-          onKeyDown={onKeyDown}
-          value={value}
-          onChange={(e) => onInput(e.target.value)}
-          className="text-5xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none"
-        />
-      ) : (
-        <div
-          className="pb-[11.5px] text-5xl font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] cursor-text"
-          onClick={enableInput}
-        >
-          {value || "Untitled"}
-        </div>
-      )}
+      {/* Title editing */}
+      <TextareaAutosize
+        ref={inputRef}
+        value={value}
+        onChange={(e) => handleTitleChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.preventDefault();
+        }}
+        className="text-5xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none border-none focus-visible:ring-0 focus-visible:outline-none"
+        placeholder="Untitled"
+      />
     </div>
   );
 };

@@ -90,7 +90,7 @@ export const Navigation = () => {
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+  }, [fetchDocuments]);
 
   useEffect(() => {
     if (isMobile) collapse();
@@ -110,7 +110,7 @@ export const Navigation = () => {
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isResizingRef.current) return;
-    let newWidth = Math.max(240, Math.min(480, e.clientX));
+    const newWidth = Math.max(240, Math.min(480, e.clientX));
     if (sidebarRef.current && navbarRef.current) {
       sidebarRef.current.style.width = `${newWidth}px`;
       navbarRef.current.style.left = `${newWidth}px`;

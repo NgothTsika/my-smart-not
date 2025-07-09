@@ -7,7 +7,6 @@ import { Spinner } from "@/components/spinner";
 import Toolbar from "@/app/(main)/_components/toolbar";
 import toast from "react-hot-toast";
 import { Cover } from "@/components/cover";
-import { safeImageUrl } from "@/lib/safe-image-url";
 import { debounce } from "lodash";
 import type { Document } from "@/types/document";
 import Editor from "@/components/editor";

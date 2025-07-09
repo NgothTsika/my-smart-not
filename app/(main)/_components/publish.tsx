@@ -69,18 +69,34 @@ const Publish = ({ initialData }: PublishProps) => {
     });
   };
 
-  const onUnpublish = () => {
+  const onUnpublish = async () => {
     setIsSubmitting(true);
-    const promise = new Promise<void>((resolve, reject) => {
-      try {
-        update(initialData.id, false);
-        resolve();
-      } catch (error) {
-        reject(error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    });
+
+    const promise = fetch("/api/documents", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "update",
+        payload: {
+          id: initialData.id,
+          isPublished: false,
+        },
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to unpublish");
+        }
+        const updated = await res.json();
+
+        const store = useDocumentStore.getState();
+        store.updateCurrentPublished(updated.id, false);
+        store.setCurrentDocument(updated);
+      })
+      .finally(() => setIsSubmitting(false));
 
     toast.promise(promise, {
       loading: "Unpublishing...",
