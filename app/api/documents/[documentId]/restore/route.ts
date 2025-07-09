@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import prisma from "@/lib/prismadb";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { documentId: string } }
+  { params }: { params: Record<string, string> }
 ) {
-  const { documentId } = context.params;
+  const { documentId } = params;
 
   try {
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
@@ -23,26 +24,21 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const document = await prisma.document.findUnique({
-      where: { id: documentId },
-    });
-
-    if (!document || document.userId !== user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
-
-    const updatedDocument = await prisma.document.update({
-      where: { id: documentId },
+    const document = await prisma.document.update({
+      where: {
+        id: documentId,
+        userId: user.id,
+      },
       data: {
         isArchived: false,
       },
     });
 
-    return NextResponse.json(updatedDocument, { status: 200 });
-  } catch (error) {
-    console.error("[RESTORE_DOCUMENT_ERROR]", error);
+    return NextResponse.json(document);
+  } catch (err) {
+    console.error("[DOCUMENT_RESTORE]", err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Something went wrong" },
       { status: 500 }
     );
   }
