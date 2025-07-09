@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prismadb";
 
 export async function PATCH(
-  req: Request,
-  context: { params: { documentId: string } }
+  req: NextRequest,
+  { params }: { params: { documentId: string } }
 ) {
-  const { documentId } = context.params;
+  const { documentId } = params;
 
   try {
     const archiveRecursive = async (id: string) => {
