@@ -1,19 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useDocumentStore } from "@/stores/use-document-store";
 import { Spinner } from "@/components/spinner";
 import Toolbar from "@/app/(main)/_components/toolbar";
 import toast from "react-hot-toast";
 import { Cover } from "@/components/cover";
-import type { Document } from "@/types/document";
 import { safeImageUrl } from "@/lib/safe-image-url";
-import { Editor } from "@/components/editor";
 import { debounce } from "lodash";
+import type { Document } from "@/types/document";
+import Editor from "@/components/editor";
 
 const DocumentIdPage = () => {
   const params = useParams();
+  const router = useRouter();
   const documentId = params?.documentId as string;
 
   const [loading, setLoading] = useState(true);
@@ -28,35 +29,43 @@ const DocumentIdPage = () => {
   );
 
   // Fetch document
-  const fetchDocument = async () => {
-    try {
-      const res = await fetch(`/api/documents/${documentId}`);
-      const data: Document = await res.json();
+  useEffect(() => {
+    let isMounted = true;
 
-      if (res.ok) {
-        setCurrentDocument(data);
-      } else if (res.status === 404) {
-        toast.error("Document not found");
-      } else {
-        toast.error("Error loading document");
+    const fetchDocument = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/documents/${documentId}`);
+        const data: Document = await res.json();
+
+        if (!isMounted) return;
+
+        if (res.ok && data) {
+          setCurrentDocument(data);
+          setContent(data.content || "");
+        } else if (res.status === 404) {
+          toast.error("Document not found");
+          router.replace("/error");
+        } else {
+          toast.error("Error loading document");
+          router.replace("/error");
+        }
+      } catch (err) {
+        toast.error("Something went wrong.");
+        router.replace("/error");
+      } finally {
+        if (isMounted) setLoading(false);
       }
-    } catch (err) {
-      toast.error("Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  useEffect(() => {
     if (documentId) fetchDocument();
-  }, [documentId]);
 
-  useEffect(() => {
-    if (currentDoc?.content) {
-      setContent(currentDoc.content);
-    }
-  }, [currentDoc]);
+    return () => {
+      isMounted = false;
+    };
+  }, [documentId, router, setCurrentDocument]);
 
+  // Auto-save
   const debouncedSave = useRef(
     debounce(async (newContent: string) => {
       try {
@@ -73,7 +82,7 @@ const DocumentIdPage = () => {
         }
 
         useDocumentStore.getState().setCurrentDocument({
-          ...currentDoc!,
+          ...useDocumentStore.getState().currentDocument!,
           content: newContent,
         });
       } catch (err) {
@@ -83,13 +92,10 @@ const DocumentIdPage = () => {
     }, 1000)
   ).current;
 
-  const onChange = useCallback(
-    (value: string) => {
-      setContent(value);
-      debouncedSave(value);
-    },
-    [debouncedSave]
-  );
+  const onChange = (value: string) => {
+    setContent(value);
+    debouncedSave(value);
+  };
 
   if (loading) {
     return (
@@ -100,11 +106,7 @@ const DocumentIdPage = () => {
   }
 
   if (!currentDoc) {
-    return (
-      <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-        Document not found.
-      </div>
-    );
+    return null; // nothing to show, already redirected if error
   }
 
   return (

@@ -60,7 +60,7 @@ export const DocumentList = ({
             onClick={() => handleDocumentClick(doc.id)}
             label={doc.title || "Untitled"}
             icon={FileIcon}
-            documentIcon={doc.icon}
+            documentIcon={doc.icon ?? undefined}
             active={params?.documentId === doc.id}
             level={level}
             onExpand={() => onExpand(doc.id)}

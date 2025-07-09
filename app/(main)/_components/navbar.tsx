@@ -7,6 +7,7 @@ import Menu from "./menu";
 import type { Document } from "@/types/document";
 import { useParams } from "next/navigation";
 import { useDocumentStore } from "@/stores/use-document-store";
+import Publish from "./publish";
 
 interface NavbarProps {
   isCollapsed: boolean;
@@ -42,6 +43,7 @@ export const NavBar = ({
             <div className="flex items-center justify-between w-full">
               <Title documentId={document.id} />
               <div className="flex items-center gap-x-2">
+                <Publish initialData={document} />
                 <Menu id={document.id} />
               </div>
             </div>

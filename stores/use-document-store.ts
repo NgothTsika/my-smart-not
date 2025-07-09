@@ -11,8 +11,9 @@ interface DocumentStore {
   updateTitle: (id: string, title: string) => void;
   updateIcon: (id: string, icon: string | null) => void;
   updateCoverImage: (id: string, coverImage: string | null) => void;
-  setCurrentDocument: (doc: Document) => void;
-  updateCurrentArchived: (isArchived: boolean) => void;
+  setCurrentDocument: (doc: Document | null) => void;
+  updateCurrentArchived: (id: string, isArchived: boolean) => void;
+  updateCurrentPublished: (id: string, isPublished: boolean) => void;
 }
 
 export const useDocumentStore = create<DocumentStore>((set) => ({
@@ -73,10 +74,25 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
   setCurrentDocument: (doc) => set({ currentDocument: doc }),
 
-  updateCurrentArchived: (isArchived) =>
+  updateCurrentArchived: (id, isArchived) =>
     set((state) => ({
-      currentDocument: state.currentDocument
-        ? { ...state.currentDocument, isArchived }
-        : null,
+      documents: state.documents.map((doc) =>
+        doc.id === id ? { ...doc, isArchived } : doc
+      ),
+      currentDocument:
+        state.currentDocument?.id === id
+          ? { ...state.currentDocument, isArchived }
+          : state.currentDocument,
+    })),
+
+  updateCurrentPublished: (id, isPublished) =>
+    set((state) => ({
+      documents: state.documents.map((doc) =>
+        doc.id === id ? { ...doc, isPublished } : doc
+      ),
+      currentDocument:
+        state.currentDocument?.id === id
+          ? { ...state.currentDocument, isPublished }
+          : state.currentDocument,
     })),
 }));

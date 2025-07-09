@@ -29,18 +29,11 @@ const Documentspage = () => {
     if (res.ok) {
       addDocument(data);
       router.push(`/documents/${data.id}`);
-      toast.promise(
-        Promise.resolve(),
-        {
-          loading: "Creating a new note...",
-          success: "New note created!",
-          error: "Failed to create document.",
-        },
-        {
-          position: "bottom-right",
-          duration: 3000,
-        }
-      );
+      toast.promise(Promise.resolve(), {
+        loading: "Creating a new note...",
+        success: "New note created!",
+        error: "Failed to create document.",
+      });
     } else if (data.error === "Unauthorized") {
       console.error("Unauthorized access:", data.error);
       alert("You must be logged in to create a document.");

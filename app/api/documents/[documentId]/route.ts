@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prismadb";
 
+// GET a document by ID
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ documentId: string }> }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = await context.params;
+  const { documentId } = context.params;
 
   try {
     const document = await prisma.document.findUnique({
@@ -27,12 +28,13 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: Promise<{ documentId: string }> }
+  context: { params: { documentId: string } }
 ) {
-  const { documentId } = await context.params;
+  const { documentId } = context.params;
 
   try {
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
     }
@@ -61,19 +63,20 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { title, icon, coverImage, content } = body;
+    const { title, icon, coverImage, content, isPublished } = body;
 
-    const updatedDocument = await prisma.document.update({
+    const updated = await prisma.document.update({
       where: { id: documentId },
       data: {
         ...(title !== undefined && { title }),
         ...(icon !== undefined && { icon }),
         ...(coverImage !== undefined && { coverImage }),
         ...(content !== undefined && { content }),
+        ...(isPublished !== undefined && { isPublished }),
       },
     });
 
-    return NextResponse.json(updatedDocument, { status: 200 });
+    return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     console.error("[DOCUMENT_PATCH]", error);
     return NextResponse.json(

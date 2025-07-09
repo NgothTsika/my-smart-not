@@ -38,18 +38,11 @@ const Menu = ({ id }: MenuProps) => {
       }
     });
 
-    toast.promise(
-      Promise.resolve(),
-      {
-        loading: "Moving to trash...",
-        success: "Note moved to the trash!",
-        error: "Failed to archive note.",
-      },
-      {
-        position: "bottom-right",
-        duration: 3000,
-      }
-    );
+    toast.promise(Promise.resolve(), {
+      loading: "Moving to trash...",
+      success: "Note moved to the trash!",
+      error: "Failed to archive note.",
+    });
   };
 
   return (

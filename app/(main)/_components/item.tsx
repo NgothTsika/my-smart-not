@@ -79,18 +79,11 @@ export const Item = ({
       }
     });
 
-    toast.promise(
-      Promise.resolve(),
-      {
-        loading: "Moving to trash...",
-        success: "Note moved to the trash!",
-        error: "Failed to archive note.",
-      },
-      {
-        position: "bottom-right",
-        duration: 3000,
-      }
-    );
+    toast.promise(Promise.resolve(), {
+      loading: "Moving to trash...",
+      success: "Note moved to the trash!",
+      error: "Failed to archive note.",
+    });
   };
 
   const onCreate = async (
@@ -111,18 +104,11 @@ export const Item = ({
       router.push(`/documents/${data.id}`);
     });
 
-    toast.promise(
-      Promise.resolve(),
-      {
-        loading: "Creating document...",
-        success: "Document created successfully!",
-        error: "Failed to create document.",
-      },
-      {
-        position: "bottom-right",
-        duration: 3000,
-      }
-    );
+    toast.promise(Promise.resolve(), {
+      loading: "Creating document...",
+      success: "Document created successfully!",
+      error: "Failed to create document.",
+    });
   };
 
   const ChevronIcon = expanded ? ChevronDown : ChevronRight;
@@ -150,7 +136,7 @@ export const Item = ({
       {documentIcon ? (
         <div className="shrink-0 mr-2 text-[18px]">{documentIcon}</div>
       ) : (
-        <Icon className="h-[18px] mr-2 shrink-0 text-muted-foreground" />
+        <Icon className="h-[18px] w-[18px] mr-2 shrink-0 text-muted-foreground" />
       )}
 
       <span className="truncate">{label}</span>

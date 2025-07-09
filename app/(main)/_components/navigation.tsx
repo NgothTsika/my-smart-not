@@ -162,18 +162,11 @@ export const Navigation = () => {
 
       if (res.ok) {
         addDocument(data);
-        toast.promise(
-          Promise.resolve(),
-          {
-            loading: "Creating a new note...",
-            success: "New note created!",
-            error: "Failed to create document.",
-          },
-          {
-            position: "bottom-right",
-            duration: 3000,
-          }
-        );
+        toast.promise(Promise.resolve(), {
+          loading: "Creating a new note...",
+          success: "New note created!",
+          error: "Failed to create document.",
+        });
         router.push(`/documents/${data.id}`);
       } else if (data.error === "Unauthorized") {
         alert("You must be logged in to create a document.");

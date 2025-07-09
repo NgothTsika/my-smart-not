@@ -28,18 +28,11 @@ const Banner = ({ documentId }: BannerProps) => {
     if (res.ok) {
       restoreDocument(data);
       router.refresh();
-      toast.promise(
-        Promise.resolve(),
-        {
-          loading: "Creating a new note...",
-          success: "Document restored!",
-          error: "Failed to create document.",
-        },
-        {
-          position: "bottom-center",
-          duration: 3000,
-        }
-      );
+      toast.promise(Promise.resolve(), {
+        loading: "Creating a new note...",
+        success: "Document restored!",
+        error: "Failed to create document.",
+      });
     } else {
       toast.error(data.error || "Failed to restore.");
     }

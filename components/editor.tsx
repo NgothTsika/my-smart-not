@@ -14,25 +14,32 @@ import { useEffect } from "react";
 import { useEdgeStore } from "@/lib/edgestore";
 
 interface EditorProps {
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   initialContent?: string;
   editable?: boolean;
 }
 
-export const Editor = ({
-  onChange,
-  initialContent,
-  editable = true,
-}: EditorProps) => {
+const Editor = ({ onChange, initialContent, editable = true }: EditorProps) => {
   const { resolvedTheme } = useTheme();
+  const { edgestore } = useEdgeStore();
+
+  const handleUpload = async (file: File) => {
+    const response = await edgestore.publicFiles.upload({
+      file,
+    });
+    return response.url;
+  };
 
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent
       ? (JSON.parse(initialContent) as PartialBlock[])
       : undefined,
+    uploadFile: handleUpload,
   });
 
   useEffect(() => {
+    if (!onChange) return;
+
     const handleChange = async () => {
       const json = await editor.document;
       onChange(JSON.stringify(json));
@@ -51,3 +58,5 @@ export const Editor = ({
     </div>
   );
 };
+
+export default Editor;

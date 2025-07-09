@@ -5,5 +5,6 @@ export interface Document {
   coverImage?: string | null;
   parentDocumentId: string | null;
   isArchived?: boolean;
+  isPublished?: boolean;
   content?: string;
 }
