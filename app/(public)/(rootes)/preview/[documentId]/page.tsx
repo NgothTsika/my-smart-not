@@ -83,13 +83,7 @@ const PreviewPage = () => {
         documentId={document.id}
       />
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
-        <Toolbar
-          preview
-          initialData={{
-            ...document,
-            coverImage: safeImageUrl(document.coverImage),
-          }}
-        />
+        <Toolbar preview />
         {content ? (
           <Editor
             editable={false}
