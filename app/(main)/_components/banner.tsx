@@ -47,7 +47,7 @@ const Banner = ({ documentId }: BannerProps) => {
 
       if (res.ok) {
         toast.success("Document deleted permanently!");
-        router.push("/documents"); // safer than using params
+        router.push("/documents");
         router.refresh();
       } else {
         toast.error(data.error || "Failed to delete document.");

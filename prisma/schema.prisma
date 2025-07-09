@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -33,10 +33,10 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  user              User    @relation(fields: [userId], references: [id])
+  user              User    @relation(fields: [userId], references: [id], map: "fk_account_user")
 
   @@unique([provider, providerAccountId])
-  @@index([userId], map: "Account_userId_fkey")
+  @@index([userId])
 }
 
 model Session {
@@ -44,9 +44,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], map: "fk_session_user")
 
-  @@index([userId], map: "Session_userId_fkey")
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -61,19 +61,20 @@ model Document {
   id               String     @id @default(cuid())
   title            String
   userId           String
-  isArchived       Boolean
+  isArchived       Boolean    @default(false)
+  isPublished      Boolean    @default(false)
   parentDocumentId String?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-  content          String?    @db.LongText
+  content          String?    
   coverImage       String?
   icon             String?
-  isPublished      Boolean
-  parentDocument   Document?  @relation("ParentChild", fields: [parentDocumentId], references: [id])
-  children         Document[] @relation("ParentChild")
-  user             User       @relation(fields: [userId], references: [id])
 
-  @@index([userId], map: "by_user")
-  @@index([userId, parentDocumentId], map: "by_user_parent")
-  @@index([parentDocumentId], map: "Document_parentDocumentId_fkey")
+  parentDocument   Document?  @relation("ParentChild", fields: [parentDocumentId], references: [id], map: "fk_document_parent")
+  children         Document[] @relation("ParentChild")
+  user             User       @relation(fields: [userId], references: [id], map: "fk_document_user")
+
+  @@index([userId])
+  @@index([userId, parentDocumentId])
+  @@index([parentDocumentId])
 }

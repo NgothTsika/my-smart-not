@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/lib/prismadb";
 import { z } from "zod";
+import { authOptions } from "@/lib/auth";
 
 const ParamsSchema = z.object({
   parentDocument: z.string().optional(),
