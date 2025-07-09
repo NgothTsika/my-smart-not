@@ -20,14 +20,20 @@ const Menu = ({ id }: MenuProps) => {
   const params = useParams();
 
   const removeDocument = useDocumentStore((state) => state.removeDocument);
+
   const onArchive = async (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     event.stopPropagation();
     if (!id) return;
 
-    const promise = fetch(`/api/documents/${id}/archive`, {
-      method: "PATCH",
+    const promise = fetch("/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "archive",
+        payload: { id },
+      }),
     }).then(async (res) => {
       if (!res.ok) throw new Error("Archive failed");
 
@@ -38,7 +44,7 @@ const Menu = ({ id }: MenuProps) => {
       }
     });
 
-    toast.promise(Promise.resolve(), {
+    toast.promise(promise, {
       loading: "Moving to trash...",
       success: "Note moved to the trash!",
       error: "Failed to archive note.",

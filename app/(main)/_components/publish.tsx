@@ -36,12 +36,18 @@ const Publish = ({ initialData }: PublishProps) => {
   const onPublish = async () => {
     setIsSubmitting(true);
 
-    const promise = fetch(`/api/documents/${initialData.id}`, {
-      method: "PATCH",
+    const promise = fetch("/api/documents", {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ isPublished: true }),
+      body: JSON.stringify({
+        action: "update",
+        payload: {
+          id: initialData.id,
+          isPublished: true,
+        },
+      }),
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -71,13 +77,15 @@ const Publish = ({ initialData }: PublishProps) => {
         resolve();
       } catch (error) {
         reject(error);
+      } finally {
+        setIsSubmitting(false);
       }
-    }).finally(() => setIsSubmitting(false));
+    });
 
     toast.promise(promise, {
-      loading: "Unarchiving...",
-      success: "Note unarchived",
-      error: "Failed to unarchive note",
+      loading: "Unpublishing...",
+      success: "Note unpublished",
+      error: "Failed to unpublish note",
     });
   };
 
@@ -92,13 +100,13 @@ const Publish = ({ initialData }: PublishProps) => {
       <PopoverTrigger asChild>
         <Button size="sm" variant="ghost">
           Publish
-          {isPublished && <Globe className=" text-sky-500 w-4 h-4 ml-2" />}
+          {isPublished && <Globe className="text-sky-500 w-4 h-4 ml-2" />}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72" align="end" alignOffset={8} forceMount>
         {isPublished ? (
-          <div className=" space-y-4">
-            <div className=" flex items-center gap-x-2">
+          <div className="space-y-4">
+            <div className="flex items-center gap-x-2">
               <Globe className="text-sky-500 animate-pulse h-4 w-4" />
               <p className="text-sky-500">This note is live on web.</p>
             </div>
@@ -108,16 +116,15 @@ const Publish = ({ initialData }: PublishProps) => {
                 value={url}
                 readOnly
               />
-
               <Button
                 onClick={onCopy}
                 disabled={copied}
                 className="h-8 rounded-l-none"
               >
                 {copied ? (
-                  <Check className=" h-4 w-4" />
+                  <Check className="h-4 w-4" />
                 ) : (
-                  <Copy className=" h-4 w-4" />
+                  <Copy className="h-4 w-4" />
                 )}
               </Button>
             </div>
@@ -131,16 +138,16 @@ const Publish = ({ initialData }: PublishProps) => {
             </Button>
           </div>
         ) : (
-          <div className=" flex flex-col items-center justify-center">
-            <Globe className=" h-8 w-8 text-muted-foreground mb-2" />
-            <p className=" text-sm font-medium mb-2">Publish this note</p>
+          <div className="flex flex-col items-center justify-center">
+            <Globe className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm font-medium mb-2">Publish this note</p>
             <span className="text-xs text-muted-foreground mb-4">
-              Share your work with other
+              Share your work with others
             </span>
             <Button
               disabled={isSubmitting}
               onClick={onPublish}
-              className=" w-full text-xs"
+              className="w-full text-xs"
               size="sm"
             >
               Publish

@@ -15,34 +15,45 @@ const Banner = ({ documentId }: BannerProps) => {
   const setCurrentDocument = useDocumentStore(
     (state) => state.setCurrentDocument
   );
-
   const restoreDocument = useDocumentStore((state) => state.restoreDocument);
 
   const handleRestore = async () => {
-    const res = await fetch(`/api/documents/${documentId}/restore`, {
-      method: "PATCH",
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      restoreDocument(data);
-      router.refresh();
-      toast.promise(Promise.resolve(), {
-        loading: "Creating a new note...",
-        success: "Document restored!",
-        error: "Failed to create document.",
+    try {
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "restore",
+          payload: { id: documentId },
+        }),
       });
-    } else {
-      toast.error(data.error || "Failed to restore.");
+
+      const data = await res.json();
+
+      if (res.ok) {
+        restoreDocument(data);
+        router.refresh();
+        toast.success("Document restored!");
+      } else {
+        toast.error(data.error || "Failed to restore.");
+      }
+    } catch (error) {
+      console.error("Restore failed:", error);
+      toast.error("Something went wrong.");
     }
   };
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(`/api/documents/${documentId}/delete`, {
-        method: "DELETE",
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete",
+          payload: { id: documentId },
+        }),
       });
+
       const data = await res.json();
 
       if (res.ok) {
@@ -70,7 +81,6 @@ const Banner = ({ documentId }: BannerProps) => {
           Restore
         </button>
 
-        {/* ✅ ConfirmModal wraps the button and handles delete */}
         <ConfirmModal onConfirm={handleDelete}>
           <button className="text-xs px-3 py-1 bg-red-200 text-red-900 rounded hover:bg-red-300 font-medium">
             Delete

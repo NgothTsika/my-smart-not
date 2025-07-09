@@ -21,7 +21,7 @@ const TrashBox = () => {
   useEffect(() => {
     const fetchTrash = async () => {
       try {
-        const res = await fetch("/api/documents/trash");
+        const res = await fetch("/api/documents?trash=true");
         const data = await res.json();
         if (res.ok) setDocuments(data);
         else toast.error(data.error || "Failed to fetch trash.");
@@ -33,8 +33,13 @@ const TrashBox = () => {
   }, []);
 
   const handleRestore = async (id: string) => {
-    const promise = fetch(`/api/documents/${id}/restore`, {
-      method: "PATCH",
+    const promise = fetch("/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "restore",
+        payload: { id },
+      }),
     }).then(async (res) => {
       if (!res.ok) throw new Error("Restore failed");
 
@@ -52,8 +57,13 @@ const TrashBox = () => {
   };
 
   const handlePermanentDelete = async (id: string) => {
-    const promise = fetch(`/api/documents/${id}/delete`, {
-      method: "DELETE",
+    const promise = fetch("/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "delete",
+        payload: { id },
+      }),
     }).then(() => {
       setDocuments((prev) => prev?.filter((doc) => doc.id !== id));
 

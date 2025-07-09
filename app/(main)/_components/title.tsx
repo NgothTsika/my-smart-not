@@ -1,77 +1,52 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useDocumentStore } from "@/stores/use-document-store";
 
-interface TitleProps {
-  documentId: string;
-}
-
-const Title = ({ documentId }: { documentId: string }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const title = useDocumentStore(
-    (state) => state.documents.find((doc) => doc.id === documentId)?.title
-  );
+const Title = () => {
+  const currentDocument = useDocumentStore((state) => state.currentDocument);
   const updateTitle = useDocumentStore((state) => state.updateTitle);
 
-  const [localTitle, setLocalTitle] = useState(title || "");
+  const [localTitle, setLocalTitle] = useState(currentDocument?.title || "");
 
   useEffect(() => {
-    setLocalTitle(title || "");
-  }, [title]);
+    setLocalTitle(currentDocument?.title || "");
+  }, [currentDocument?.title]);
 
-  const handleSubmit = async () => {
-    setIsEditing(false);
+  const handleChange = async (value: string) => {
+    setLocalTitle(value);
+    if (!currentDocument) return;
+
     try {
-      const res = await fetch(`/api/documents/${documentId}`, {
-        method: "PATCH",
+      const res = await fetch("/api/documents", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: localTitle }),
+        body: JSON.stringify({
+          action: "update",
+          payload: { id: currentDocument.id, title: value },
+        }),
       });
 
-      if (res.ok) {
-        updateTitle(documentId, localTitle);
-        toast.success("Title updated!");
-      } else {
+      if (!res.ok) {
         const data = await res.json();
         toast.error(data.error || "Failed to update.");
+        return;
       }
+
+      updateTitle(currentDocument.id, value);
     } catch {
       toast.error("Something went wrong.");
     }
   };
 
-  return isEditing ? (
+  return (
     <Input
-      ref={inputRef}
       value={localTitle}
-      onChange={(e) => setLocalTitle(e.target.value)}
-      onBlur={handleSubmit}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") handleSubmit();
-        if (e.key === "Escape") {
-          setLocalTitle(title || "");
-          setIsEditing(false);
-        }
-      }}
+      onChange={(e) => handleChange(e.target.value)}
+      className="text-sm font-medium px-0 py-0 border-none shadow-none focus:outline-none focus:ring-0 focus-visible:ring-0 bg-transparent"
     />
-  ) : (
-    <span
-      role="button"
-      className="text-sm font-medium cursor-pointer"
-      onClick={() => {
-        setIsEditing(true);
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, 0);
-      }}
-    >
-      {localTitle || "Untitled"}
-    </span>
   );
 };
 

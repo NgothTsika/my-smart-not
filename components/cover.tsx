@@ -34,10 +34,16 @@ export const Cover = ({
         await edgestore.publicFiles.delete({ url });
       }
 
-      const res = await fetch(`/api/documents/${documentId}`, {
-        method: "PATCH",
+      const res = await fetch("/api/documents", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coverImage: null }),
+        body: JSON.stringify({
+          action: "update",
+          payload: {
+            id: documentId,
+            coverImage: null,
+          },
+        }),
       });
 
       if (!res.ok) throw new Error();
@@ -48,7 +54,7 @@ export const Cover = ({
       router.refresh();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to remove cover image"); 
+      toast.error("Failed to remove cover image");
     }
   };
 
@@ -71,15 +77,16 @@ export const Cover = ({
           sizes="100vw"
         />
       ) : null}
+
       {url && !preview && (
-        <div className=" opacity-0 group-hover:opacity-100 absolute bottom-5 right-5 flex items-center gap-x-2">
+        <div className="opacity-0 group-hover:opacity-100 absolute bottom-5 right-5 flex items-center gap-x-2">
           <Button
             onClick={() => coverImage.onReplace(url)}
-            className=" text-muted-foreground text-xs dark:text-white"
+            className="text-muted-foreground text-xs dark:text-white"
             variant="outline"
             size="sm"
           >
-            <ImageIcon className=" h-4 w-4 mr-2" />
+            <ImageIcon className="h-4 w-4 mr-2" />
             Change cover
           </Button>
           <Button

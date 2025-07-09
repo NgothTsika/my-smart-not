@@ -67,8 +67,13 @@ export const Item = ({
     event.stopPropagation();
     if (!id) return;
 
-    const promise = fetch(`/api/documents/${id}/archive`, {
-      method: "PATCH",
+    const promise = fetch("/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "archive",
+        payload: { id },
+      }),
     }).then(async (res) => {
       if (!res.ok) throw new Error("Archive failed");
 
@@ -79,7 +84,7 @@ export const Item = ({
       }
     });
 
-    toast.promise(Promise.resolve(), {
+    toast.promise(promise, {
       loading: "Moving to trash...",
       success: "Note moved to the trash!",
       error: "Failed to archive note.",
@@ -92,19 +97,27 @@ export const Item = ({
     event.stopPropagation();
     if (!id) return;
 
-    const promise = fetch("/api/documents/create", {
+    const promise = fetch("/api/documents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Untitled", parentDocumentId: id }),
+      body: JSON.stringify({
+        action: "create",
+        payload: {
+          title: "Untitled",
+          parentDocumentId: id,
+        },
+      }),
     }).then(async (res) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create");
+
       if (!expanded) onExpand?.();
+
       addDocument(data);
       router.push(`/documents/${data.id}`);
     });
 
-    toast.promise(Promise.resolve(), {
+    toast.promise(promise, {
       loading: "Creating document...",
       success: "Document created successfully!",
       error: "Failed to create document.",
@@ -142,8 +155,8 @@ export const Item = ({
       <span className="truncate">{label}</span>
 
       {isSearch && (
-        <kbd className="ml-auto pointer-events-none  justify-center flex items-center bg-muted select-none h-5  border text-xs gap-1 rounded px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-          <span className="text-md text-muted-foreground ml-1 ">⌘</span>k
+        <kbd className="ml-auto pointer-events-none justify-center flex items-center bg-muted select-none h-5 border text-xs gap-1 rounded px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          <span className="text-md text-muted-foreground ml-1">⌘</span>k
         </kbd>
       )}
 
@@ -153,7 +166,7 @@ export const Item = ({
             <DropdownMenuTrigger onClick={(e) => e.stopPropagation()} asChild>
               <div
                 role="button"
-                className="opacity-0 group-hover:opacity-100 h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-60"
+                className="opacity-0 group-hover:opacity-100 h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600"
               >
                 <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
               </div>

@@ -21,12 +21,29 @@ const PreviewPage = () => {
 
   useEffect(() => {
     const fetchPublishedDocument = async () => {
+      if (!documentId) return;
+
       try {
         setLoading(true);
-        const res = await fetch(`/api/documents/${documentId}`);
+
+        const res = await fetch("/api/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "get",
+            payload: { id: documentId },
+          }),
+        });
+
+        if (!res.ok) {
+          toast.error("Failed to fetch document.");
+          router.replace("/error");
+          return;
+        }
+
         const data: Document = await res.json();
 
-        if (!res.ok || !data || !data.isPublished) {
+        if (!data || !data.isPublished) {
           toast.error("This document is not published.");
           router.replace("/error");
           return;
@@ -43,7 +60,7 @@ const PreviewPage = () => {
       }
     };
 
-    if (documentId) fetchPublishedDocument();
+    fetchPublishedDocument();
   }, [documentId, router]);
 
   if (loading) {

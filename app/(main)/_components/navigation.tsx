@@ -1,3 +1,4 @@
+// ✅ REFACTORED Navigation.tsx to use Zustand `currentDocument`
 "use client";
 
 import {
@@ -28,7 +29,6 @@ import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 
 import { useDocumentStore } from "@/stores/use-document-store";
-import type { Document } from "@/types/document";
 import { NavBar } from "./navbar";
 
 export const Navigation = () => {
@@ -41,10 +41,12 @@ export const Navigation = () => {
   const router = useRouter();
 
   const setDocuments = useDocumentStore((state) => state.setDocuments);
-  const updateTitle = useDocumentStore((state) => state.updateTitle);
+  const setCurrentDocument = useDocumentStore(
+    (state) => state.setCurrentDocument
+  );
   const addDocument = useDocumentStore((state) => state.addDocument);
 
-  const [currentDocument, setCurrentDocument] = useState<Document | null>(null);
+  const currentDocument = useDocumentStore((state) => state.currentDocument);
 
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
@@ -66,27 +68,21 @@ export const Navigation = () => {
   const fetchCurrentDocument = async () => {
     const rawId = params.documentId;
     const documentId = Array.isArray(rawId) ? rawId[0] : rawId;
-
     if (!documentId) return;
 
     try {
-      const res = await fetch(`/api/documents/${documentId}`);
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "get",
+          payload: { id: documentId },
+        }),
+      });
       const data = await res.json();
-      if (res.ok) {
-        setCurrentDocument({
-          id: documentId,
-          title: data.title,
-          parentDocumentId: data.parentDocumentId ?? null,
-          icon: data.icon ?? undefined,
-          isArchived: data.isArchived,
-        });
-
-        updateTitle(documentId, data.title);
-      } else if (res.status === 404) {
-        router.push("/documents");
-      } else {
-        console.error("Error loading document title:", data.error);
-      }
+      if (res.ok) setCurrentDocument(data);
+      else if (res.status === 404) router.push("/documents");
+      else console.error("Error loading document title:", data.error);
     } catch (err) {
       console.error("Fetch error:", err);
     }
@@ -152,21 +148,23 @@ export const Navigation = () => {
 
   const handleCreate = async () => {
     try {
-      const res = await fetch("/api/documents/create", {
+      const res = await fetch("/api/documents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Untitled", parentDocumentId: null }),
+        body: JSON.stringify({
+          action: "create",
+          payload: {
+            title: "Untitled",
+            parentDocumentId: null,
+          },
+        }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         addDocument(data);
-        toast.promise(Promise.resolve(), {
-          loading: "Creating a new note...",
-          success: "New note created!",
-          error: "Failed to create document.",
-        });
+        toast.success("New note created!");
         router.push(`/documents/${data.id}`);
       } else if (data.error === "Unauthorized") {
         alert("You must be logged in to create a document.");
@@ -240,11 +238,7 @@ export const Navigation = () => {
         )}
       >
         {!!params.documentId ? (
-          <NavBar
-            isCollapsed={isCollapsed}
-            onResetWidth={resetWidth}
-            document={currentDocument}
-          />
+          <NavBar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
         ) : (
           <nav className="bg-transparent px-3 py-2 w-full ">
             {isCollapsed && (

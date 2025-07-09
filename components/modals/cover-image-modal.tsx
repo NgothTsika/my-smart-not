@@ -8,7 +8,6 @@ import { useEdgeStore } from "@/lib/edgestore";
 import { useParams, useRouter } from "next/navigation";
 import { useDocumentStore } from "@/stores/use-document-store";
 import toast from "react-hot-toast";
-import { CheckCircle2 } from "lucide-react";
 import { UploaderProvider } from "@/components/upload/uploader-provider";
 
 export const CoverImageModal = () => {
@@ -29,6 +28,27 @@ export const CoverImageModal = () => {
     coverImage.onClose();
   };
 
+  const updateCover = async (url: string) => {
+    const res = await fetch("/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "update",
+        payload: {
+          id: params.documentId,
+          coverImage: url,
+        },
+      }),
+    });
+
+    if (!res.ok) throw new Error("Failed to update document");
+
+    updateCoverImage(params.documentId as string, url);
+    toast.success("Cover image updated!");
+    router.refresh();
+    onClose();
+  };
+
   const onChange = async (file?: File) => {
     if (!file || !params?.documentId) return;
 
@@ -41,20 +61,7 @@ export const CoverImageModal = () => {
         options: { replaceTargetUrl: coverImage.url },
       });
 
-      const response = await fetch(`/api/documents/${params.documentId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coverImage: res.url }),
-      });
-
-      if (!response.ok) throw new Error();
-
-      updateCoverImage(params.documentId as string, res.url);
-
-      setSuccess(true);
-      toast.success("Cover image updated!");
-      router.refresh();
-      onClose();
+      await updateCover(res.url);
     } catch (err) {
       toast.error("Failed to upload image");
       console.error(err);
@@ -80,24 +87,11 @@ export const CoverImageModal = () => {
             return { url: res.url };
           }}
           onUploadCompleted={async (file) => {
-            const response = await fetch(
-              `/api/documents/${params.documentId}`,
-              {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ coverImage: file.url }),
-              }
-            );
-
-            if (!response.ok) {
+            try {
+              await updateCover(file.url);
+            } catch {
               toast.error("Failed to update cover");
-              return;
             }
-
-            updateCoverImage(params.documentId as string, file.url);
-            toast.success("Cover image updated!");
-            router.refresh();
-            coverImage.onClose();
           }}
         >
           <SingleImageDropzone

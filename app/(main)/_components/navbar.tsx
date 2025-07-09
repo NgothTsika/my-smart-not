@@ -1,30 +1,21 @@
+// ✅ REFACTORED NavBar.tsx
 "use client";
 
 import { PanelLeft } from "lucide-react";
 import Title from "./title";
 import Banner from "./banner";
 import Menu from "./menu";
-import type { Document } from "@/types/document";
-import { useParams } from "next/navigation";
-import { useDocumentStore } from "@/stores/use-document-store";
 import Publish from "./publish";
+import { useDocumentStore } from "@/stores/use-document-store";
 
 interface NavbarProps {
   isCollapsed: boolean;
   onResetWidth: () => void;
-  document?: Document | null;
 }
 
-export const NavBar = ({
-  isCollapsed,
-  onResetWidth,
-  document,
-}: NavbarProps) => {
-  const params = useParams();
+export const NavBar = ({ isCollapsed, onResetWidth }: NavbarProps) => {
+  const currentDoc = useDocumentStore((state) => state.currentDocument);
 
-  const currentDoc = useDocumentStore((state) =>
-    state.documents.find((d) => d.id === params.documentId)
-  );
   return (
     <>
       <nav className="bg-background dark:bg-[#1F1F1F] px-3 py-2 w-full flex items-center gap-x-4">
@@ -35,16 +26,18 @@ export const NavBar = ({
             className="h-6 w-6 text-muted-foreground"
           />
         )}
+
         <div className="flex items-center justify-between w-full">
           {currentDoc?.icon && (
             <span className="text-xl px-2">{currentDoc.icon}</span>
           )}
-          {document ? (
+
+          {currentDoc ? (
             <div className="flex items-center justify-between w-full">
-              <Title documentId={document.id} />
+              <Title />
               <div className="flex items-center gap-x-2">
-                <Publish initialData={document} />
-                <Menu id={document.id} />
+                <Publish initialData={currentDoc} />
+                <Menu id={currentDoc.id} />
               </div>
             </div>
           ) : (
@@ -52,7 +45,8 @@ export const NavBar = ({
           )}
         </div>
       </nav>
-      {document?.isArchived && <Banner documentId={document.id} />}
+
+      {currentDoc?.isArchived && <Banner documentId={currentDoc.id} />}
     </>
   );
 };

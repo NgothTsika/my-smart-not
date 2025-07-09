@@ -7,39 +7,43 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-const Documentspage = () => {
+const DocumentsPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const addDocument = useDocumentStore((state) => state.addDocument);
 
   const handleCreate = async () => {
-    const res = await fetch("/api/documents/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: "Untitled",
-        parentDocumentId: null,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      addDocument(data);
-      router.push(`/documents/${data.id}`);
-      toast.promise(Promise.resolve(), {
-        loading: "Creating a new note...",
-        success: "New note created!",
-        error: "Failed to create document.",
+    try {
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "create",
+          payload: {
+            title: "Untitled",
+            parentDocumentId: null,
+          },
+        }),
       });
-    } else if (data.error === "Unauthorized") {
-      console.error("Unauthorized access:", data.error);
-      alert("You must be logged in to create a document.");
-      router.push("/auth");
-    } else {
-      console.error("Failed to create document:", data.error);
+
+      const data = await res.json();
+
+      if (res.ok) {
+        addDocument(data);
+        router.push(`/documents/${data.id}`);
+        toast.success("New note created!");
+      } else if (data.error === "Unauthorized") {
+        console.error("Unauthorized access:", data.error);
+        alert("You must be logged in to create a document.");
+        router.push("/auth");
+      } else {
+        console.error("Failed to create document:", data.error);
+        alert("Something went wrong.");
+      }
+    } catch (err) {
+      console.error("Create error:", err);
       alert("Something went wrong.");
     }
   };
@@ -57,4 +61,4 @@ const Documentspage = () => {
   );
 };
 
-export default Documentspage;
+export default DocumentsPage;

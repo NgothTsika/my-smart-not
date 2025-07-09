@@ -34,12 +34,19 @@ const DocumentIdPage = () => {
     const fetchDocument = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/documents/${documentId}`);
-        const data: Document = await res.json();
+        const res = await fetch("/api/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "get",
+            payload: { id: documentId },
+          }),
+        });
 
         if (!isMounted) return;
 
-        if (res.ok && data) {
+        if (res.ok) {
+          const data: Document = await res.json();
           setCurrentDocument(data);
           setContent(data.content || "");
         } else if (res.status === 404) {
@@ -67,10 +74,13 @@ const DocumentIdPage = () => {
   const debouncedSave = useRef(
     debounce(async (newContent: string) => {
       try {
-        const res = await fetch(`/api/documents/${documentId}`, {
-          method: "PATCH",
+        const res = await fetch("/api/documents", {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: newContent }),
+          body: JSON.stringify({
+            action: "update",
+            payload: { id: documentId, content: newContent },
+          }),
         });
 
         if (!res.ok) {

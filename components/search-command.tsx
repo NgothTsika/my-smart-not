@@ -8,7 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { File, FileIcon } from "lucide-react";
+import { File } from "lucide-react";
 import { useSearch } from "@/hooks/use-search";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -49,7 +49,9 @@ export const SearchCommand = () => {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/documents/search?query=${query}`);
+        const res = await fetch(
+          `/api/documents?query=${encodeURIComponent(query)}`
+        );
         const data = await res.json();
         if (res.ok) setResults(data);
         else setResults([]);
@@ -90,15 +92,15 @@ export const SearchCommand = () => {
           {loading ? "Searching..." : "No documents found."}
         </CommandEmpty>
         <CommandGroup heading="Documents">
-          {results?.map((document) => (
+          {results.map((document) => (
             <CommandItem
               key={document.id}
               value={`${document.id}-${document.title}`}
               title={document.title}
-              onSelect={handleSelect}
+              onSelect={() => handleSelect(document.id)}
             >
               {document.icon ? (
-                <p className=" mr-2 text-[18px]">{document.icon}</p>
+                <p className="mr-2 text-[18px]">{document.icon}</p>
               ) : (
                 <File className="mr-2 h-4 w-4" />
               )}
