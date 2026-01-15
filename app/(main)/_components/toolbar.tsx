@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { ElementRef, useRef, useState, useEffect } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useCoverImage } from "@/hooks/use-cover-image";
+import { debounce } from "lodash";
 import type { Document } from "@/types/document";
 
 interface ToolbarProps {
@@ -32,27 +33,36 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
     setValue(currentDocument?.title || "");
   }, [currentDocument?.title]);
 
-  const updateTitle = async (title: string) => {
-    if (!currentDocument) return;
-    try {
-      const res = await fetch("/api/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update",
-          payload: {
-            id: currentDocument.id,
-            title,
-          },
-        }),
-      });
+  const debouncedUpdateTitle = useRef(
+    debounce(async (title: string) => {
+      if (!currentDocument) return;
+      try {
+        const res = await fetch("/api/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update",
+            payload: {
+              id: currentDocument.id,
+              title,
+            },
+          }),
+        });
 
-      if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error();
 
-      updateTitleGlobally(currentDocument.id, title);
-    } catch (err) {
-      toast.error("Failed to update title");
-    }
+        updateTitleGlobally(currentDocument.id, title);
+      } catch (err) {
+        toast.error("Failed to update title");
+        // Revert to previous title on error
+        setValue(currentDocument?.title || "");
+      }
+    }, 500)
+  ).current;
+
+  const handleTitleChange = (newValue: string) => {
+    setValue(newValue);
+    debouncedUpdateTitle(newValue || "Untitled");
   };
 
   const updateIcon = async (icon: string | null) => {
@@ -77,11 +87,6 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
     } catch (err) {
       toast.error("Failed to update icon");
     }
-  };
-
-  const handleTitleChange = (value: string) => {
-    setValue(value);
-    updateTitle(value || "Untitled");
   };
 
   if (!currentDocument) return null;
