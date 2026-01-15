@@ -29,15 +29,16 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
   const updateIconGlobally = useDocumentStore((state) => state.updateIcon);
 
   const [value, setValue] = useState(currentDocument?.title || "");
+  const [isSynced, setIsSynced] = useState(true);
 
-  // Only sync when the prop changes, not when store updates
+  // Initialize value when document changes
   useEffect(() => {
     setValue(currentDocument?.title || "");
-  }, [currentDocument?.id]); // Depend on ID, not title
+    setIsSynced(true);
+  }, [currentDocument?.id]);
 
   const debouncedUpdateTitle = useRef(
-    debounce(async (title: string) => {
-      if (!currentDocument) return;
+    debounce(async (title: string, docId: string) => {
       try {
         const res = await fetch("/api/documents", {
           method: "POST",
@@ -45,17 +46,19 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
           body: JSON.stringify({
             action: "update",
             payload: {
-              id: currentDocument.id,
-              title,
+              id: docId,
+              title: title || "Untitled",
             },
           }),
         });
 
         if (!res.ok) throw new Error();
 
-        updateTitleGlobally(currentDocument.id, title);
+        updateTitleGlobally(docId, title || "Untitled");
+        setIsSynced(true);
       } catch (err) {
         toast.error("Failed to update title");
+        setIsSynced(false);
         // Revert to previous title on error
         setValue(currentDocument?.title || "");
       }
@@ -64,7 +67,8 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
 
   const handleTitleChange = (newValue: string) => {
     setValue(newValue);
-    debouncedUpdateTitle(newValue || "Untitled");
+    setIsSynced(false);
+    debouncedUpdateTitle(newValue, currentDocument.id);
   };
 
   const updateIcon = async (icon: string | null) => {
@@ -153,7 +157,8 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
         onKeyDown={(e) => {
           if (e.key === "Enter") e.preventDefault();
         }}
-        className="text-5xl bg-transparent font-bold wrap-break-word outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none border-none focus-visible:ring-0 focus-visible:outline-none"
+        disabled={preview}
+        className="text-5xl bg-transparent font-bold wrap-break-word outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none border-none focus-visible:ring-0 focus-visible:outline-none disabled:opacity-75"
         placeholder="Untitled"
       />
     </div>
