@@ -6,9 +6,9 @@ generator client {
 //the comment for only
 datasource db {
   // provider = "postgresql"
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
