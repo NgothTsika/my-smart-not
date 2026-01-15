@@ -7,15 +7,15 @@ interface AvatarProps {
 }
 
 const Avatar: React.FC<AvatarProps> = ({ src }) => {
-  const fallbackImage = "/images/avatar.png";
+  const fallbackImage = "/images/avatar.jpeg";
   const isValidSrc = src?.startsWith("http") || src?.startsWith("/");
 
   return (
     <Image
       alt="Avatar"
-      className="rounded-full border border-yellow-400 dark:border-yellow-500"
-      height={30}
-      width={30}
+      className="rounded-full border shadow"
+      height={35}
+      width={35}
       src={isValidSrc ? src! : fallbackImage}
     />
   );

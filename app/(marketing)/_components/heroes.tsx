@@ -26,6 +26,12 @@ const Heroes = () => {
             alt="illustration2"
             className="object-contain"
           />
+          <Image
+            src="/illustration1_Wi.png"
+            fill
+            alt="illustration2"
+            className="object-contain hidden dark:block"
+          />
         </div>
       </div>
     </div>

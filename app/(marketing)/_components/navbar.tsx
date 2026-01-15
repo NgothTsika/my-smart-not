@@ -11,6 +11,7 @@ import Avatar from "@/components/Avatar";
 import { useState } from "react";
 import { Spinner } from "@/components/spinner";
 import Link from "next/link";
+import { UserItem } from "@/app/(main)/_components/user-item";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
@@ -65,24 +66,7 @@ const Navbar = () => {
                 <Avatar src={session.user.image || null} />
               </div>
             </div>
-            {showCard && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 space-y-2 cursor-pointer">
-                <p className="text-sm text-gray-700 dark:text-gray-300 border-gray-400 rounded-md p-2 bg-accent">
-                  {session.user.name}
-                </p>
-                <p className="text-sm text-gray-700 dark:text-gray-300 border-gray-400 rounded-md p-2 bg-accent">
-                  {session.user.email}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2 w-full text-red-500"
-                  onClick={handleLogout}
-                >
-                  Log out
-                </Button>
-              </div>
-            )}
+            {showCard && <UserItem />}
           </div>
         )}
         <div>

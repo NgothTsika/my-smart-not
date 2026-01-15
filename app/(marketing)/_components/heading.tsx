@@ -4,6 +4,7 @@ import { Spinner } from "@/components/spinner";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const Heading = () => {
@@ -38,9 +39,11 @@ const Heading = () => {
       )}
 
       {status === "authenticated" && session?.user && (
-        <Button>
-          Go to Your Workspace
-          <ArrowRight className="h-4 w-4 ml-2" />
+        <Button className="cursor-pointer mt-5">
+          <Link href="/documents" className="flex items-center justify-center">
+            Go to Your Workspace
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Link>
         </Button>
       )}
     </div>

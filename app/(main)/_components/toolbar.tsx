@@ -9,12 +9,14 @@ import toast from "react-hot-toast";
 import { ElementRef, useRef, useState, useEffect } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useCoverImage } from "@/hooks/use-cover-image";
+import type { Document } from "@/types/document";
 
 interface ToolbarProps {
   preview?: boolean;
+  initailData: Document;
 }
 
-const Toolbar = ({ preview }: ToolbarProps) => {
+const Toolbar = ({ preview, initailData }: ToolbarProps) => {
   const router = useRouter();
   const inputRef = useRef<ElementRef<"textarea">>(null);
 

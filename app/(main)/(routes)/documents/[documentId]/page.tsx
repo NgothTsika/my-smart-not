@@ -120,7 +120,7 @@ const DocumentIdPage = () => {
     <div className="pb-40">
       <Cover url={currentDoc.coverImage} documentId={currentDoc.id} />
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
-        <Toolbar />
+        <Toolbar initailData="" />
         <Editor onChange={onChange} initialContent={content} />
       </div>
     </div>

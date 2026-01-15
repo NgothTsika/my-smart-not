@@ -1,4 +1,3 @@
-// ✅ REFACTORED Navigation.tsx to use Zustand `currentDocument`
 "use client";
 
 import {
@@ -45,8 +44,6 @@ export const Navigation = () => {
     (state) => state.setCurrentDocument
   );
   const addDocument = useDocumentStore((state) => state.addDocument);
-
-  const currentDocument = useDocumentStore((state) => state.currentDocument);
 
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
@@ -192,7 +189,7 @@ export const Navigation = () => {
           onClick={collapse}
           role="button"
           className={cn(
-            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 opacity-0 group-hover/sidebar:opacity-100 transition cursor-pointer",
+            "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-[18px] right-2 opacity-0 group-hover/sidebar:opacity-100 transition cursor-pointer",
             isMobile && "opacity-100"
           )}
         >
