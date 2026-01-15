@@ -23,15 +23,17 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
 
   const coverImage = useCoverImage();
 
-  const currentDocument = useDocumentStore((state) => state.currentDocument);
+  // Use initailData which is the actual document passed as prop
+  const currentDocument = initailData;
   const updateTitleGlobally = useDocumentStore((state) => state.updateTitle);
   const updateIconGlobally = useDocumentStore((state) => state.updateIcon);
 
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(currentDocument?.title || "");
 
+  // Only sync when the prop changes, not when store updates
   useEffect(() => {
     setValue(currentDocument?.title || "");
-  }, [currentDocument?.title]);
+  }, [currentDocument?.id]); // Depend on ID, not title
 
   const debouncedUpdateTitle = useRef(
     debounce(async (title: string) => {
@@ -92,7 +94,7 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
   if (!currentDocument) return null;
 
   return (
-    <div className="pl-[54px] group relative">
+    <div className="pl-13.5 group relative">
       {/* Icon display */}
       {!!currentDocument.icon && !preview && (
         <div className="flex items-center gap-x-2 group/icon pt-6">
@@ -151,7 +153,7 @@ const Toolbar = ({ preview, initailData }: ToolbarProps) => {
         onKeyDown={(e) => {
           if (e.key === "Enter") e.preventDefault();
         }}
-        className="text-5xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none border-none focus-visible:ring-0 focus-visible:outline-none"
+        className="text-5xl bg-transparent font-bold wrap-break-word outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none border-none focus-visible:ring-0 focus-visible:outline-none"
         placeholder="Untitled"
       />
     </div>
