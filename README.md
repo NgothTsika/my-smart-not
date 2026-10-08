@@ -21,14 +21,20 @@ The most important library in this project is [@blocknote/react](https://www.npm
 
 ![Main workspace](public/projectUI/main-screen.png)
 
-### Key screens
+### Auth UI
 
 ![Auth screen](public/projectUI/auth%20page.png)
 ![Google auth](public/projectUI/google%20auth.png)
-![Dark and light mode](public/projectUI/dark%20&%20light%20mode%20setting.png)
-![Search menu](public/projectUI/search%20menu.png)
-![Supabase dashboard](public/projectUI/supabase.png)
+
+### Key screens
+
 ![Publish and share](public/projectUI/publish%20&%20share.png)
+![Search menu](public/projectUI/search%20menu.png)
+![Dark and light mode](public/projectUI/dark%20&%20light%20mode%20setting.png)
+
+### Database
+
+![Supabase dashboard](public/projectUI/supabase.png)
 ![Vercel deployment](public/projectUI/vercel.png)
 
 ## Getting started
